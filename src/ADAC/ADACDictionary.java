@@ -312,7 +312,7 @@ public class ADACDictionary {
     valLength[x] = 64;
 
     ////////////////////////////////////////////////////////////
-    // Acquisition information - mulitframe specific
+    // Acquisition information - multiframe specific
     ////////////////////////////////////////////////////////////
 
     x = 45;

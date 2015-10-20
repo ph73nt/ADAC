@@ -68,12 +68,18 @@ public class ADACEncoder {
     // First 10 bytes are reserved for preamble...
     // ...must begin with adac01
     charsToHeader("adac01", 0);
+    
+    // Null char
+    imHdr[6] = 0;
+    
     // ...must then know how many "labels" - do this later, but generally this
-    //   willl be 88 including the "extras"
-    int noLabels = 0;
-    // imHdr[6&7]= (eg) 88
+    //   will be 88 including the "extras"
+    byte noLabels = 0;    
+    imHdr[7]= 88;
+    
     // ... Number of sub-headers - usually 2 for normal images
     imHdr[8] = 2;
+    
     // ... unused byte - set to zero
     imHdr[9] = 0;
 
@@ -88,33 +94,48 @@ public class ADACEncoder {
     Object obj = imp.getProperty("Info");
     String strInfo = obj.toString();
 
-    for (int i = 0; i < ADACDictionary.noKeys - 113; i++) {
+    for (int i = 0; i < ADACDictionary.noKeys; i++) {
       // Look for occurences of Key descriptions
       int intIndex = strInfo.indexOf(dict.descriptions[i + 1] + " = ");
       // -1 returned if description not found
-      String strTemp;
+      
       int offset;
+      
       if (intIndex > -1) {
+      
         noLabels++;
         IJ.log("Found " + dict.descriptions[i + 1]);
         int len = dict.valLength[i + 1];
+       
         // Calculate the final character position in the string - remember " = "
-        offset = intIndex + dict.descriptions[i + 1].length() + 3 + len;
+        int from = intIndex + dict.descriptions[i + 1].length() + 3;
+        offset = strInfo.indexOf("\n", from);
+      
+        String strTemp;
         if (strInfo.length() - intIndex >= offset) {
-          strTemp = strInfo.substring(intIndex, offset);
+          strTemp = strInfo.substring(from, offset);
         } else {
-          strTemp = strInfo.substring(intIndex);
+          strTemp = strInfo.substring(from);
         }
-        // The image "info" has had newline characters put in.
-        //  Truncate the temp string at NLs
+        
         IJ.log(strTemp);
-        intIndex = strTemp.indexOf("\n"); // Find first instance of NL
-        if (intIndex > -1) {
-          // Re-write string to exclude \n and everything after
-          strTemp = strTemp.substring(0, intIndex);
+
+        // Make a mutable buffer for manipulating the fixed-length
+        // string fields in the header
+        StringBuffer buffer = new StringBuffer(strTemp);
+        
+        // Make sure lenth padded with nulls
+        while(buffer.length() < len) {
+        	buffer.append('\u0000');
         }
+        
+        // Not greater than it should be!
+        while(buffer.length() > len) {
+        	buffer.deleteCharAt(buffer.length() - 1);
+        }
+        
         // Write the data into the header at the correct offset
-        charsToHeader(strTemp, lblOffset);
+        charsToHeader(buffer.toString(), lblOffset);
         // Recalculate the offset:
         lblOffset += (short) len;
         // Now write the key value that refers to this header item in form:
@@ -156,6 +177,11 @@ public class ADACEncoder {
         IJ.log("Done");
       }
     }
+    
+    // Fill in the number of labels
+    imHdr[7] = noLabels;
+    IJ.log("hdr7 = " + noLabels);
+    
   }
 
   void headerKeys(){
