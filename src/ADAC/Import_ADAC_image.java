@@ -1,12 +1,19 @@
 package ADAC;
 
-import ij.plugin.*;
-import java.io.*;
-import java.util.*;
+import ij.IJ;
+import ij.ImagePlus;
+import ij.io.FileInfo;
+import ij.io.FileOpener;
+import ij.io.OpenDialog;
+import ij.plugin.PlugIn;
+import ij.process.ImageProcessor;
+
+import java.io.BufferedInputStream;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
-import ij.*;
-import ij.io.*;
-import ij.process.*;
+import java.util.Vector;
 
 /**
  *

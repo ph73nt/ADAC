@@ -1,15 +1,16 @@
 package ADAC;
 
-import ij.*;
-import ij.io.*;
-import ij.process.*;
-import ij.gui.*;
-import ij.plugin.filter.*;
+import ij.IJ;
+import ij.ImagePlus;
+import ij.io.FileInfo;
+import ij.io.SaveDialog;
+import ij.plugin.filter.PlugInFilter;
+import ij.process.ImageProcessor;
 
-import java.io.*;
-import java.awt.*;
-import java.util.*;
-import java.net.URL;
+import java.io.BufferedOutputStream;
+import java.io.DataOutputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 
 public class Export_ADAC_image implements PlugInFilter {
 

@@ -1,14 +1,12 @@
 package ADAC;
 
-import ij.plugin.*;
+import ij.IJ;
+import ij.ImagePlus;
+import ij.io.FileInfo;
 
-import java.io.*;
-import java.util.*;
-import java.net.URL;
-
-import ij.*;
-import ij.io.*;
-import ij.process.*;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 
 public class ADACEncoder {
 
