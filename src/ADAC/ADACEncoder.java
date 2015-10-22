@@ -17,13 +17,14 @@ public class ADACEncoder {
 	private int bitsPerSample, photoInterp, imageSize;
 	private long stackSize;
 	private byte[] imHdr = new byte[HDR_SIZE];
+	private final boolean isLittleEndian = false;  // bigendian
 	private ImagePlus imp;
 	private ADACDictionary dict = new ADACDictionary();
 
 	public ADACEncoder(FileInfo fi, ImagePlus imp) {
 		this.fi = fi;
 		this.imp = imp;
-		fi.intelByteOrder = false; // bigendian
+		fi.intelByteOrder = isLittleEndian;
 		int bytesPerPixel = 1;
 
 		bitsPerSample = 8;
@@ -98,7 +99,7 @@ public class ADACEncoder {
 		Object obj = imp.getProperty("Info");
 		String strInfo = obj.toString();
 
-		for (int i = 0; i < 114; i++) { // ADACDictionary.noKeys; i++) {
+		for (int i = 0; i < ADACDictionary.noKeys; i++) {
 
 			int offset;
 
@@ -151,15 +152,16 @@ public class ADACEncoder {
 
 				// Write the data into the header at the correct offset
 				charsToHeader(buffer.toString(), lblOffset);
-				// Recalculate the offset:
-				lblOffset += (short) len;
+				
 				// Now write the key value that refers to this header item in
 				// form:
 				// AA#!&&;
 				// AA = label (or key) number;
 				shortToHeader((short) (i + 1), keyOffset);
+				
 				// ...and calculate the location for the next key
 				keyOffset += 2;
+				
 				// # = byte to define label type
 				byte[] oneByte = new byte[1];
 				switch (dict.type[i + 1]) {
@@ -182,15 +184,21 @@ public class ADACEncoder {
 				default:// default to byte
 					oneByte[0] = (byte) 0;
 				}
+				
 				bytesToHeader(oneByte, keyOffset);
+				
 				// ! = unused byte
 				keyOffset += 2;
+				
 				// && = short offset in the file to the data
 				shortToHeader(lblOffset, keyOffset);
 				keyOffset += 2;
 
 				IJ.log(strTemp);
 				IJ.log("Done");
+				
+				// Recalculate the offset to the next label:
+				lblOffset += (short) len;
 			}
 		}
 
@@ -198,11 +206,6 @@ public class ADACEncoder {
 		imHdr[7] = noLabels;
 		IJ.log("hdr7 = " + noLabels);
 
-	}
-
-	void headerKeys() {
-		// Make keys of 6 bytes in the form:
-		// AA#!&&
 	}
 
 	void charsToHeader(String s, int loc) {
@@ -232,8 +235,8 @@ public class ADACEncoder {
 
 	byte[] shortToBytes(short m_Short) {
 		byte[] m_Byte = new byte[2];
-		m_Byte[0] = (byte) (0xff & m_Short);
-		m_Byte[1] = (byte) (((0xff << 8) & m_Short) >> 8);
+		m_Byte[isLittleEndian ? 0 : 1] = (byte) (0xff & m_Short);
+		m_Byte[isLittleEndian ? 1 : 0] = (byte) (((0xff << 8) & m_Short) >> 8);
 		return m_Byte;
 	}
 }
