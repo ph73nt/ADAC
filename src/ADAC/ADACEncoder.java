@@ -125,6 +125,8 @@ public class ADACEncoder {
 				int from = intIndex + dict.descriptions[i + 1].length() + 3;
 				offset = strInfo.indexOf("\n", from);
 
+				// String that holds the info to be written into the header.
+				// This may need to be converted to numerical data.
 				String strTemp;
 				if (strInfo.length() - intIndex >= offset) {
 					strTemp = strInfo.substring(from, offset);
@@ -161,29 +163,30 @@ public class ADACEncoder {
 				keyOffset += 2;
 				
 				// # = byte to define label type
-				byte[] oneByte = new byte[1];
+				byte[] labType = new byte[1];
 				switch (dict.type[i + 1]) {
 				case 4: // variable
-					oneByte[0] = (byte) 4;
+					// I haven't seen a use case for this
+					labType[0] = (byte) 4;
 					break;
 				case 3: // Float
-					oneByte[0] = (byte) 3;
+					labType[0] = (byte) 3;
 					break;
 				case 2: // Integer
-					oneByte[0] = (byte) 2;
+					labType[0] = (byte) 2;
 					break;
 				case 1: // Short
-					oneByte[0] = (byte) 1;
+					labType[0] = (byte) 1;
 					break;
 				case 5:
 					// ADACDictionary class uses this to differentiate string
 					// from byte, but in ADAC images does not exist - just byte
 				case 0: // Byte
 				default:// default to byte
-					oneByte[0] = (byte) 0;
+					labType[0] = (byte) 0;
 				}
 				
-				bytesToHeader(oneByte, keyOffset);
+				bytesToHeader(labType, keyOffset);
 				
 				// ! = unused byte
 				keyOffset += 2;
