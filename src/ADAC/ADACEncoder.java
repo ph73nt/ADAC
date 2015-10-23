@@ -7,6 +7,7 @@ import ij.io.FileInfo;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
 
 public class ADACEncoder {
 
@@ -136,41 +137,33 @@ public class ADACEncoder {
 
 				IJ.log(strTemp);
 
-				// Make a mutable buffer for manipulating the fixed-length
-				// string fields in the header
-				StringBuffer buffer = new StringBuffer(strTemp);
-
-				// Make sure lenth padded with nulls
-				while (buffer.length() < len) {
-					buffer.append('\u0000');
-				}
-
-				// Not greater than it should be!
-				while (buffer.length() > len) {
-					buffer.deleteCharAt(buffer.length() - 1);
-				}
-
-				// Write the data into the header at the correct offset
-				charsToHeader(buffer.toString(), lblOffset);
-				
-				// Now write the key value that refers to this header item in
-				// form:
-				// AA#!&&;
-				// AA = label (or key) number;
-				shortToHeader((short) (i + 1), keyOffset);
-				
-				// ...and calculate the location for the next key
-				keyOffset += 2;
-				
-				// # = byte to define label type
+				// Decide what sort of data this is for writing into the header.
 				byte[] labType = new byte[1];
+				
+				// The dictionary knows...
 				switch (dict.type[i + 1]) {
+
 				case 4: // variable
 					// I haven't seen a use case for this
 					labType[0] = (byte) 4;
 					break;
 				case 3: // Float
 					labType[0] = (byte) 3;
+					
+					try {
+						
+						// Make floating point number from string
+						float num = Float.parseFloat(strTemp);
+						// Convert to array of bytes
+						byte[] bytes = ByteBuffer.allocate(4).putFloat(num).array();
+						IJ.log("Order = " + ByteBuffer.allocate(4).putFloat(num).order());
+						
+					} catch (NumberFormatException e){
+					
+						IJ.log("Unable to parse floating point data\n" + strTemp);
+					
+					}
+					
 					break;
 				case 2: // Integer
 					labType[0] = (byte) 2;
@@ -182,10 +175,39 @@ public class ADACEncoder {
 					// ADACDictionary class uses this to differentiate string
 					// from byte, but in ADAC images does not exist - just byte
 				case 0: // Byte
-				default:// default to byte
+				default:
+					// default to byte
 					labType[0] = (byte) 0;
+
+					// Make a mutable buffer for manipulating the fixed-length
+					// string fields in the header
+					StringBuffer buffer = new StringBuffer(strTemp);
+
+					// Make sure lenth padded with nulls
+					while (buffer.length() < len) {
+						buffer.append('\u0000');
+					}
+
+					// Not greater than it should be!
+					while (buffer.length() > len) {
+						buffer.deleteCharAt(buffer.length() - 1);
+					}
+
+					// Write the data into the header at the correct offset
+					charsToHeader(buffer.toString(), lblOffset);
+
 				}
 				
+				// Write the key value that refers to this header item in
+				// form:
+				// AA#!&&;
+				// AA = label (or key) number;
+				shortToHeader((short) (i + 1), keyOffset);
+				
+				// ...and calculate the location for the next key
+				keyOffset += 2;
+				
+				// # = byte to define label type
 				bytesToHeader(labType, keyOffset);
 				
 				// ! = unused byte
