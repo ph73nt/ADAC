@@ -6,6 +6,7 @@ package ADAC;
  */
 public class ADACDictionary {
 
+  public static final int LABEL_OFFSET = 538;
   public static final int IM_OFFSET = 2048;
   public static final int NUM_KEYS = 114;
   public static final int BYTE = 0, SHORT = 1, INT = 2;

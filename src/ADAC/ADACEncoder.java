@@ -11,7 +11,6 @@ import java.nio.ByteBuffer;
 
 public class ADACEncoder {
 
-	static final int LABEL_OFFSET = 538;
 	private FileInfo fi;
 	private int bitsPerSample, photoInterp, imageSize;
 	private long stackSize;
@@ -90,7 +89,7 @@ public class ADACEncoder {
 		// Now begins the header proper...
 
 		int keyOffset = 10;
-		short lblOffset = LABEL_OFFSET;
+		short lblOffset = ADACDictionary.LABEL_OFFSET;
 
 		// ... first parse the image info and save any ADAC tags
 		// these may be overwritten later (for tags like dimensions)
