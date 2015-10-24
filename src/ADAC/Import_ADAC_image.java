@@ -105,8 +105,6 @@ public class Import_ADAC_image extends ImagePlus implements PlugIn {
 
 class ADACDecoder {
 
-  private static final int aByte = 0, aShort = 1, anInt = 2;
-  private static final int aFloat = 3, aVar = 4, aString = 5;
   private static final int imageOffset = 2048;
   private String directory, fileName;
   private boolean littleEndian = false;
@@ -190,7 +188,7 @@ class ADACDecoder {
       IJ.log("location = " + location);
 
       // For each header field available.. get them
-      values.setSize(ADACDictionary.noKeys + 1);
+      values.setSize(ADACDictionary.NUM_KEYS + 1);
 
       for (short i = 0; i < labels; i++) {
         // Attempt to find the next key...
@@ -204,10 +202,11 @@ class ADACDecoder {
         location = fieldOffset;
         //IJ.log("location[" + i + "] = " + location);
         switch (datTyp) {
-          case aByte:
+        
+          case ADACDictionary.BYTE:
             // Differentiate between byte proper and a string
             //  (ADAC header does not)
-            if (dict.type[keynum] == aString) {
+            if (dict.type[keynum] == ADACDictionary.STRING) {
               switch (keynum) {
                 case 114:
                   AD_ex_objs = getString(dict.valLength[keynum]);
@@ -226,7 +225,8 @@ class ADACDecoder {
               values.setElementAt((byte) getByte(), keynum);
             }
             break;
-          case aShort:
+            
+          case ADACDictionary.SHORT:
             short shortValue = (short) getShort();
             switch (keynum) {
               case 39: // X-dimension
@@ -265,7 +265,8 @@ class ADACDecoder {
             }
             values.setElementAt(shortValue, keynum);
             break;
-          case anInt:
+            
+          case ADACDictionary.INT:
             int m_Int = getInt();
             switch (keynum) {
               case 46:
@@ -275,7 +276,8 @@ class ADACDecoder {
             }
             values.setElementAt(m_Int, keynum);
             break;
-          case aFloat:
+            
+          case ADACDictionary.FLOAT:
             float floatValue = getFloat();
             switch (keynum) {
               case 38: // Slice thickness

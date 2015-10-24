@@ -98,7 +98,7 @@ public class ADACEncoder {
 		Object obj = imp.getProperty("Info");
 		String strInfo = obj.toString();
 
-		for (int i = 0; i < ADACDictionary.noKeys; i++) {
+		for (int i = 0; i < ADACDictionary.NUM_KEYS; i++) {
 
 			int offset;
 
