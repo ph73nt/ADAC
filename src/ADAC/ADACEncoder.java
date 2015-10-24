@@ -15,7 +15,7 @@ public class ADACEncoder {
 	private int bitsPerSample, photoInterp, imageSize;
 	private long stackSize;
 	private byte[] imHdr = new byte[ADACDictionary.IM_OFFSET];
-	private final boolean isLittleEndian = false;  // bigendian
+	private final boolean isLittleEndian = false; // bigendian
 	private ImagePlus imp;
 	private ADACDictionary dict = new ADACDictionary();
 
@@ -104,13 +104,13 @@ public class ADACEncoder {
 			// Look for occurences of Key descriptions
 			int intIndex = -1;
 			String description = null;
-			
+
 			if (dict.descriptions.length > i
 					&& (description = dict.descriptions[i + 1]) != null
 					&& !description.equals("")) {
-				
+
 				intIndex = strInfo.indexOf(description + " = ");
-			
+
 			}
 
 			// -1 returned if description not found
@@ -138,38 +138,62 @@ public class ADACEncoder {
 
 				// Decide what sort of data this is for writing into the header.
 				byte[] labType = new byte[1];
-				
+
 				// The dictionary knows...
 				switch (dict.type[i + 1]) {
 
 				case 4: // variable
+
 					// I haven't seen a use case for this
 					labType[0] = (byte) 4;
 					break;
+
 				case 3: // Float
+
 					labType[0] = (byte) 3;
-					
+
+					try {
+
+						float num = Float.parseFloat(strTemp);
+						floatToHeader(num, lblOffset);
+
+					} catch (NumberFormatException e) {
+						IJ.log("Unable to parse floating point data\n"
+								+ strTemp);
+					}
+
+					break;
+
+				case 2: // Integer
+
+					labType[0] = (byte) 2;
+
+					try {
+
+						int num = Integer.parseInt(strTemp);
+						intToHeader(num, lblOffset);
+
+					} catch (NumberFormatException e) {
+						IJ.log("Unable to parse integer data\n" + strTemp);
+					}
+
+					break;
+
+				case 1: // Short
+
+					labType[0] = (byte) 1;
+
 					try {
 						
-						// Make floating point number from string
-						float num = Float.parseFloat(strTemp);
-						// Convert to array of bytes
-						byte[] bytes = ByteBuffer.allocate(4).putFloat(num).array();
-						IJ.log("Order = " + ByteBuffer.allocate(4).putFloat(num).order());
-						
-					} catch (NumberFormatException e){
+						short num = Short.parseShort(strTemp);
+						shortToHeader(num, lblOffset);
 					
-						IJ.log("Unable to parse floating point data\n" + strTemp);
-					
+					} catch (NumberFormatException e) {
+						IJ.log("Unable to parse short data\n" + strTemp);
 					}
-					
+
 					break;
-				case 2: // Integer
-					labType[0] = (byte) 2;
-					break;
-				case 1: // Short
-					labType[0] = (byte) 1;
-					break;
+
 				case 5:
 					// ADACDictionary class uses this to differentiate string
 					// from byte, but in ADAC images does not exist - just byte
@@ -196,29 +220,31 @@ public class ADACEncoder {
 					charsToHeader(buffer.toString(), lblOffset);
 
 				}
-				
+
 				// Write the key value that refers to this header item in
 				// form:
 				// AA#!&&;
 				// AA = label (or key) number;
 				shortToHeader((short) (i + 1), keyOffset);
-				
+
 				// ...and calculate the location for the next key
 				keyOffset += 2;
-				
+
 				// # = byte to define label type
 				bytesToHeader(labType, keyOffset);
-				
+
 				// ! = unused byte
 				keyOffset += 2;
-				
+
 				// && = short offset in the file to the data
 				shortToHeader(lblOffset, keyOffset);
 				keyOffset += 2;
 
 				IJ.log(strTemp);
 				IJ.log("Done");
-				
+
+				// Terminate each item with a null
+				lblOffset++;
 				// Recalculate the offset to the next label:
 				lblOffset += (short) len;
 			}
@@ -227,6 +253,15 @@ public class ADACEncoder {
 		// Fill in the number of labels
 		imHdr[7] = noLabels;
 		IJ.log("hdr7 = " + noLabels);
+
+	}
+
+	private void intToHeader(int num, short loc) {
+
+		// Convert to array of bytes
+		byte[] bytes = ByteBuffer.allocate(4).putInt(num).array();
+		// Write into header
+		bytesToHeader(bytes, loc);
 
 	}
 
@@ -248,6 +283,15 @@ public class ADACEncoder {
 
 	void shortToHeader(short m_Short, int loc) {
 		bytesToHeader(shortToBytes(m_Short), loc);
+	}
+
+	void floatToHeader(float aFloat, int loc) {
+
+		// Convert to array of bytes
+		byte[] bytes = ByteBuffer.allocate(4).putFloat(aFloat).array();
+		// Write into header
+		bytesToHeader(bytes, loc);
+
 	}
 
 	void writeHeader(OutputStream out) throws IOException {

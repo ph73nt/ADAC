@@ -190,11 +190,12 @@ class ADACDecoder {
       values.setSize(ADACDictionary.NUM_KEYS + 1);
 
       for (short i = 0; i < labels; i++) {
-        // Attempt to find the next key...
+        
+    	// Attempt to find the next key...
         //   ...the keynum (description)
         //   ...the offset to the value
-
         getKeys();
+        
         // Remember how far through the list of headers we have got
         offset = location;
         //IJ.log("location[" + i + "] = " + location);
@@ -288,6 +289,8 @@ class ADACDecoder {
         hdr += dict.descriptions[keynum] + " = "
                 + values.elementAt(keynum) + "\n";
 
+        IJ.log(keynum + ", " + datTyp + ", " + unused + ", " + fieldOffset + ", " + values.elementAt(keynum));
+        
         location = offset;
       }
       IJ.log("" + values.size());
