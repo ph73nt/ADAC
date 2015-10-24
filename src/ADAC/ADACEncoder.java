@@ -11,11 +11,11 @@ import java.nio.ByteBuffer;
 
 public class ADACEncoder {
 
-	static final int HDR_SIZE = 2048, LABEL_OFFSET = 538;
+	static final int LABEL_OFFSET = 538;
 	private FileInfo fi;
 	private int bitsPerSample, photoInterp, imageSize;
 	private long stackSize;
-	private byte[] imHdr = new byte[HDR_SIZE];
+	private byte[] imHdr = new byte[ADACDictionary.IM_OFFSET];
 	private final boolean isLittleEndian = false;  // bigendian
 	private ImagePlus imp;
 	private ADACDictionary dict = new ADACDictionary();
@@ -48,7 +48,7 @@ public class ADACEncoder {
 
 		imageSize = fi.width * fi.height * bytesPerPixel;
 		stackSize = (long) imageSize * fi.nImages;
-		fi.offset = HDR_SIZE;
+		fi.offset = ADACDictionary.IM_OFFSET;
 	}
 
 	public void write(OutputStream out) throws IOException {
@@ -62,7 +62,7 @@ public class ADACEncoder {
 	void buildHeader() {
 
 		// Initialise everything to zero (nulls in terms of chars)
-		for (int i = 0; i < HDR_SIZE; i++) {
+		for (int i = 0; i < ADACDictionary.IM_OFFSET; i++) {
 			imHdr[i] = 0;
 		}
 		String headerData = ""; // Holds demographic (etc) data NOT keys and

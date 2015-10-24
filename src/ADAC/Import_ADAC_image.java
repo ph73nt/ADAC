@@ -105,11 +105,10 @@ public class Import_ADAC_image extends ImagePlus implements PlugIn {
 
 class ADACDecoder {
 
-  private static final int imageOffset = 2048;
   private String directory, fileName;
   private boolean littleEndian = false;
   private int location = 0, offset = 0;
-  private byte[] bytHeader = new byte[imageOffset];
+  private byte[] bytHeader = new byte[ADACDictionary.IM_OFFSET];
 
   ADACDictionary dict = new ADACDictionary();
   BufferedInputStream inputStream, f;
@@ -151,7 +150,7 @@ class ADACDecoder {
     }
 
     // Copy header into a byte array for parsing forwards and backwards
-    f.read(bytHeader, 0, imageOffset);
+    f.read(bytHeader, 0, ADACDictionary.IM_OFFSET);
     header = getHeader();
 
     // Set some default values for testing
@@ -162,7 +161,7 @@ class ADACDecoder {
     fi.fileType = bitDepth;
     fi.frameInterval = frameTime;
     fi.intelByteOrder = false;            // Big endian on Sun Solaris
-    fi.offset = imageOffset;
+    fi.offset = ADACDictionary.IM_OFFSET;
     fi = parseADACExtras(fi);
 
     return fi;
