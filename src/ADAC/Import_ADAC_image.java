@@ -58,7 +58,7 @@ public class Import_ADAC_image extends ImagePlus implements PlugIn {
     if (fi != null && fi.width > 0 && fi.height > 0 && fi.offset > 0) {
       FileOpener fo = new FileOpener(fi);
       ImagePlus imp = fo.open(false);
-      ImageProcessor ip = imp.getProcessor();
+//      ImageProcessor ip = imp.getProcessor();
 
       /*if (fi.fileType == FileInfo.GRAY16_SIGNED) {
       if (ad.rescaleIntercept != 0.0 && dd.rescaleSlope == 1.0) {
@@ -127,7 +127,7 @@ class ADACDecoder {
 
   FileInfo getFileInfo() throws IOException {
     FileInfo fi = new FileInfo();
-    fi.fileFormat = fi.RAW;
+    fi.fileFormat = FileInfo.RAW;
     fi.fileName = fileName;
     if (directory.indexOf("://") > 0) { // is URL
       URL u = new URL(directory + fileName);
