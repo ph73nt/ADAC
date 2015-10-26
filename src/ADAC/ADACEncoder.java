@@ -8,6 +8,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 public class ADACEncoder {
 
@@ -288,9 +289,26 @@ public class ADACEncoder {
 	void floatToHeader(float aFloat, int loc) {
 
 		// Convert to array of bytes
-		byte[] bytes = ByteBuffer.allocate(4).putFloat(aFloat).array();
+		ByteBuffer buffer = ByteBuffer.allocate(4);
+		buffer.order(ByteOrder.BIG_ENDIAN);
+		buffer.putFloat(aFloat);
+		byte[] bytes = buffer.array();
 		// Write into header
 		bytesToHeader(bytes, loc);
+		
+		buffer = ByteBuffer.allocate(4);
+		buffer.order(ByteOrder.BIG_ENDIAN);
+		buffer.put(bytes);
+		buffer.position(0);
+		float f = buffer.getFloat();
+		
+		int res = bytes[3];
+	      res += (((long) bytes[2]) << 8);
+	      res += (((long) bytes[1]) << 16);
+	      res += (((long) bytes[0]) << 24);
+	      
+	      float f2 = Float.intBitsToFloat(res);
+	      System.out.println("f = " + f + "\nf2 = " + f2);
 
 	}
 

@@ -13,6 +13,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.Vector;
 
 /**
@@ -36,16 +38,20 @@ public class Import_ADAC_image extends ImagePlus implements PlugIn {
   }
 
   public void run(String arg) {
+	  
     OpenDialog od = new OpenDialog("Open ADAC image file...", arg);
     String directory = od.getDirectory();
     String fileName = od.getFileName();
+    
     if (fileName == null) {
       return;
     }
+    
     IJ.showStatus("Opening: " + directory + fileName);
     FileInfo fi = null;
     ADACDecoder ad = new ADACDecoder(directory, fileName);
     ad.inputStream = inputStream;
+    
     try {
       fi = ad.getFileInfo();
     } catch (IOException e) {
@@ -55,7 +61,9 @@ public class Import_ADAC_image extends ImagePlus implements PlugIn {
       IJ.error("ADACDecoder", msg);
       return;
     }
+    
     if (fi != null && fi.width > 0 && fi.height > 0 && fi.offset > 0) {
+    	
       FileOpener fo = new FileOpener(fi);
       ImagePlus imp = fo.open(false);
 //      ImageProcessor ip = imp.getProcessor();
@@ -82,22 +90,27 @@ public class Import_ADAC_image extends ImagePlus implements PlugIn {
 //          IJ.log("window: " + min + "-" + max);
 //        }
 //      }
+      
       if (imp.getStackSize() > 1) {
         setStack(fileName, imp.getStack());
       } else {
         setProcessor(fileName, imp.getProcessor());
       }
+      
       setCalibration(imp.getCalibration());
 
       setProperty("Info", ad.header);//getHeader());
 
       setFileInfo(fi); // needed for revert
+      
       if (arg.equals("")) {
         show();
       }
+      
     } else { //if (showErrors)
       IJ.error("ADACDecoder", "Unable to decode ADAC header.");
     }
+    
     IJ.showStatus("");
 
   }
@@ -107,11 +120,12 @@ class ADACDecoder {
 
   private String directory, fileName;
   private boolean littleEndian = false;
-  private int location = 0, offset = 0;
-  private byte[] bytHeader = new byte[ADACDictionary.IM_OFFSET];
-
-  ADACDictionary dict = new ADACDictionary();
-  BufferedInputStream inputStream, f;
+  private int offset = 0;
+  private ByteBuffer keyBuffer = ByteBuffer.allocate(ADACDictionary.LABEL_OFFSET);
+  private ByteBuffer valBuffer = ByteBuffer.allocate(ADACDictionary.IM_OFFSET);
+  private ADACDictionary dict = new ADACDictionary();
+  BufferedInputStream inputStream;
+  private BufferedInputStream f;
 
   public String header, AD_Type, AD_ex_objs;
   public Vector values = new Vector();
@@ -126,17 +140,26 @@ class ADACDecoder {
   }
 
   FileInfo getFileInfo() throws IOException {
-    FileInfo fi = new FileInfo();
+
+	FileInfo fi = new FileInfo();
     fi.fileFormat = FileInfo.RAW;
     fi.fileName = fileName;
+    fi.intelByteOrder = false;
+    
     if (directory.indexOf("://") > 0) { // is URL
+    	
       URL u = new URL(directory + fileName);
       inputStream = new BufferedInputStream(u.openStream());
       fi.inputStream = inputStream;
+      
     } else if (inputStream != null) {
+    	
       fi.inputStream = inputStream;
+      
     } else {
+    	
       fi.directory = directory;
+      
     }
 
     if (inputStream != null) {
@@ -144,13 +167,32 @@ class ADACDecoder {
     } else {
       f = new BufferedInputStream(new FileInputStream(directory + fileName));
     }
+    
     if (IJ.debugMode) {
+    	
       IJ.log("");
       IJ.log("ADACDecoder: decoding " + fileName);
+      
     }
 
-    // Copy header into a byte array for parsing forwards and backwards
-    f.read(bytHeader, 0, ADACDictionary.IM_OFFSET);
+    // Copy header into a byteBuffer for parsing forwards and backwards
+    byte[] bytHeader = new byte[ADACDictionary.LABEL_OFFSET];
+    byte[] valHeader = new byte[ADACDictionary.IM_OFFSET];
+    f.read(bytHeader, 0, bytHeader.length);
+    f.read(valHeader, ADACDictionary.LABEL_OFFSET, valHeader.length - ADACDictionary.LABEL_OFFSET);
+
+    if(fi.intelByteOrder){
+    	keyBuffer.order(ByteOrder.LITTLE_ENDIAN);
+    	valBuffer.order(ByteOrder.BIG_ENDIAN);
+    }
+    
+    keyBuffer.put(bytHeader);
+    keyBuffer.position(0);
+    
+    valBuffer.put(valHeader);
+    valBuffer.position(0);
+    
+    // Parse the header
     header = getHeader();
 
     // Set some default values for testing
@@ -160,31 +202,31 @@ class ADACDecoder {
     fi.pixelDepth = slice_t;
     fi.fileType = bitDepth;
     fi.frameInterval = frameTime;
-    fi.intelByteOrder = false;            // Big endian on Sun Solaris
     fi.offset = ADACDictionary.IM_OFFSET;
     fi = parseADACExtras(fi);
 
     return fi;
+    
   }
 
   String getHeader() throws IOException {
-    String hdr;
-    //////////////////////////////////////////////////////////////
+  
+	String hdr;
+    
+	//////////////////////////////////////////////////////////////
     // Administrative header info
     //////////////////////////////////////////////////////////////
 
     // First 10 bytes reserved for preamble
-    hdr = getString(6) + "\n";
+    hdr = getKeyString(6) + "\n";
     IJ.log(hdr);                 // says adac01
+
     try {
-      short labels = getShort();
+    	
+      short labels = keyBuffer.getShort();
       IJ.log(Integer.toString(labels)); // Number of labels in header
-      IJ.log(Integer.toString(getByte()));  // Number of sub-headers
-      IJ.log(Integer.toString(getByte()));  // Unused byte
-
-      offset = location;
-
-      IJ.log("location = " + location);
+      IJ.log(Integer.toString(keyBuffer.get()));  // Number of sub-headers
+      IJ.log(Integer.toString(keyBuffer.get()));  // Unused byte
 
       // For each header field available.. get them
       values.setSize(ADACDictionary.NUM_KEYS + 1);
@@ -196,11 +238,6 @@ class ADACDecoder {
         //   ...the offset to the value
         getKeys();
         
-        // Remember how far through the list of headers we have got
-        offset = location;
-        //IJ.log("location[" + i + "] = " + location);
-        location = fieldOffset;
-        //IJ.log("location[" + i + "] = " + location);
         switch (datTyp) {
         
           case ADACDictionary.BYTE:
@@ -209,97 +246,124 @@ class ADACDecoder {
             if (dict.type[keynum] == ADACDictionary.STRING) {
               switch (keynum) {
                 case 114:
-                  AD_ex_objs = getString(dict.valLength[keynum]);
+                  AD_ex_objs = getValString(dict.valLength[keynum], fieldOffset);
                   values.setElementAt(AD_ex_objs, keynum);
                   break;
                 case 17:
-                  AD_Type = getStringLessNull(dict.valLength[keynum]);
+                  AD_Type = getValString(dict.valLength[keynum], fieldOffset);
                   values.setElementAt(AD_Type, keynum);
                   break;
                 default:
                   values.setElementAt(
-                          getStringLessNull(dict.valLength[keynum]), keynum);
+                          getValString(dict.valLength[keynum], fieldOffset), keynum);
                   break;
               }
             } else {
-              values.setElementAt((byte) getByte(), keynum);
+              values.setElementAt(keyBuffer.get(fieldOffset), keynum);
             }
             break;
             
           case ADACDictionary.SHORT:
-            short shortValue = (short) getShort();
+        	  
+            short shortValue = valBuffer.getShort(fieldOffset);
+            
             switch (keynum) {
+            
               case 39: // X-dimension
                 xdim = shortValue;
                 break;
+                
               case 40: //Y-dimension
                 ydim = shortValue;
                 break;
+                
               case 41: //Z dimension
                 zdim = shortValue;
                 break;
+                
               case 42: // Pixel depth
-                switch (shortValue) {
+                
+            	switch (shortValue) {
+                
                   case 8:
                     bitDepth = FileInfo.GRAY8;
                     break;
+                    
                   case 16:
                     bitDepth = FileInfo.GRAY16_SIGNED;
                     break;
+                    
                   case 32:
                     bitDepth = FileInfo.GRAY32_FLOAT;
                     break;
+                    
                   default:
                     bitDepth = FileInfo.GRAY16_UNSIGNED;
-                }
-                ;
+                };
+                
                 break;
+                
               case 86:
                 noSets = shortValue;
                 IJ.log("" + noSets);
                 break;
+                
               case 61:
                 intervals = shortValue;
                 IJ.log("" + intervals);
                 break;
+                
             }
+            
             values.setElementAt(shortValue, keynum);
             break;
             
           case ADACDictionary.INT:
-            int m_Int = getInt();
+        	  
+            int m_Int = valBuffer.getInt(fieldOffset);
+            
             switch (keynum) {
+            
               case 46:
                 // Time oper frame
                 frameTime = ((double) m_Int) / 1000d;
                 break;
+                
             }
             values.setElementAt(m_Int, keynum);
             break;
             
           case ADACDictionary.FLOAT:
-            float floatValue = getFloat();
+        	  
+            float floatValue = valBuffer.getFloat(fieldOffset);
+            
             switch (keynum) {
+            
               case 38: // Slice thickness
                 slice_t = floatValue;
+                
             }
+            
             values.setElementAt(floatValue, keynum);
             break;
+            
         }
+        
         hdr += dict.descriptions[keynum] + " = "
                 + values.elementAt(keynum) + "\n";
 
         IJ.log(keynum + ", " + datTyp + ", " + unused + ", " + fieldOffset + ", " + values.elementAt(keynum));
         
-        location = offset;
       }
+      
       IJ.log("" + values.size());
 
       /////////////// Get ready for the next code:
-      getKeys();
-      IJ.log(Integer.toString(keynum));
+//      getKeys();
+//      IJ.log(Integer.toString(keynum));
 
       return hdr;
+      
     } catch (IOException e) {
       IJ.error("Failed to retrieve ADAC image file header. "
               + "Is this an ADAC image file?");
@@ -395,114 +459,34 @@ class ADACDecoder {
   }
 
   void getKeys() throws IOException {
-    keynum = getShort();
-    datTyp = getByte();
-    unused = getByte();
-    fieldOffset = getShort();
+	  
+    keynum = keyBuffer.getShort();
+    datTyp = keyBuffer.get();
+    unused = keyBuffer.get();
+    fieldOffset = keyBuffer.getShort();
+  
   }
 
-  String getString(int length) throws IOException {
-    byte[] buf = new byte[length];
-    System.arraycopy(bytHeader, location, buf, 0, length);
-    location += length;
-    return new String(buf);
+  String getKeyString(int length) throws IOException {
+	  
+	  byte[] mBytes = new byte[length];
+	  keyBuffer.get(mBytes, 0, length);
+	  String string = new String(mBytes);
+	  return string.trim();
+	  
   }
 
-  String getStringLessNull(int length) throws IOException {
-    String theString = "";
-    int i;
-    for (i = 0; i
-            < length; i++) {
-      byte[] buf = new byte[1];
-      buf[0] = getByte();
-      if (buf[0] != 0) {
-        String temp = new String(buf);
-        theString += (char) buf[0];
-      }
-    }
-    return theString;
+  String getValString(int length, int offset) throws IOException {
+	  
+	  byte[] mBytes = new byte[length];
+	  
+	  for (int i = 0; i < length; i++){
+		  mBytes[i] = valBuffer.get(offset + i);		  
+	  }
+	  
+	  String string = new String(mBytes);
+	  return string.trim();
+	  
   }
-
-  byte getByte() throws IOException {
-    byte b = bytHeader[location];
-    ++location;
-    return b;
-  }
-
-  short getShort() throws IOException {
-    byte b0 = getByte();
-    byte b1 = getByte();
-    // Remember to discard low bits when getting the short a Java
-    //  has no byte or short operations, only casting from int
-    if (littleEndian) {
-      return (short) ((b1 << 8) + (b0 & 0xff));
-   } else {
-      return (short) ((b0 << 8) + (b1 & 0xff));
-    }
-  }
-
-  final int getInt() throws IOException {
-    int b0 = getByte();
-    int b1 = getByte();
-    int b2 = getByte();
-    int b3 = getByte();
-    if (littleEndian) {
-      return ((b3 << 24) + (b2 << 16) + (b1 << 8) + b0);
-    } else {
-      return ((b0 << 24) + (b1 << 16) + (b2 << 8) + b3);
-    }
-  }
-
-  double getDouble() throws IOException {
-    int b0 = getByte();
-    int b1 = getByte();
-    int b2 = getByte();
-    int b3 = getByte();
-    int b4 = getByte();
-    int b5 = getByte();
-    int b6 = getByte();
-    int b7 = getByte();
-    long res = 0;
-    if (littleEndian) {
-      res += b0;
-      res += (((long) b1) << 8);
-      res += (((long) b2) << 16);
-      res += (((long) b3) << 24);
-      res += (((long) b4) << 32);
-      res += (((long) b5) << 40);
-      res += (((long) b6) << 48);
-      res += (((long) b7) << 56);
-    } else {
-      res += b7;
-      res += (((long) b6) << 8);
-      res += (((long) b5) << 16);
-      res += (((long) b4) << 24);
-      res += (((long) b3) << 32);
-      res += (((long) b2) << 40);
-      res += (((long) b1) << 48);
-      res += (((long) b0) << 56);
-    }
-    return Double.longBitsToDouble(res);
-  }
-
-  float getFloat() throws IOException {
-    int b0 = getByte();
-    int b1 = getByte();
-    int b2 = getByte();
-    int b3 = getByte();
-    int res = 0;
-    if (littleEndian) {
-      res += b0;
-      res += (((long) b1) << 8);
-      res += (((long) b2) << 16);
-      res += (((long) b3) << 24);
-    } else {
-      res += b3;
-      res += (((long) b2) << 8);
-      res += (((long) b1) << 16);
-      res += (((long) b0) << 24);
-    }
-    return Float.intBitsToFloat(res);
-  }
-
+  
 }
