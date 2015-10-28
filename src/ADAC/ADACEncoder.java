@@ -15,7 +15,8 @@ public class ADACEncoder {
 	private FileInfo fi;
 	private int bitsPerSample, photoInterp, imageSize;
 	private long stackSize;
-	private byte[] imHdr = new byte[ADACDictionary.IM_OFFSET];
+	private ByteBuffer keyBuffer = ByteBuffer.allocate(ADACDictionary.LABEL_OFFSET);
+	private ByteBuffer valBuffer = ByteBuffer.allocate(ADACDictionary.IM_OFFSET);
 	private final boolean isLittleEndian = false; // bigendian
 	private ImagePlus imp;
 	private ADACDictionary dict = new ADACDictionary();
@@ -61,46 +62,39 @@ public class ADACEncoder {
 
 	void buildHeader() {
 
-		// Initialise everything to zero (nulls in terms of chars)
-		for (int i = 0; i < ADACDictionary.IM_OFFSET; i++) {
-			imHdr[i] = 0;
-		}
-		String headerData = ""; // Holds demographic (etc) data NOT keys and
-								// locations
-
 		// First 10 bytes are reserved for preamble...
 		// ...must begin with adac01
-		charsToHeader("adac01", 0);
+		keyBuffer.put("adac01".getBytes());
 
-		// Null char
-		imHdr[6] = 0;
-
-		// ...must then know how many "labels" - do this later, but generally
-		// this
-		// will be 88 including the "extras"
+		// Next char null and then add number of "labels" - but do that later
 		byte noLabels = 0;
-		imHdr[7] = 88;
+		keyBuffer.position(8);
 
 		// ... Number of sub-headers - usually 2 for normal images
-		imHdr[8] = 2;
+		keyBuffer.putChar('2');
 
-		// ... unused byte - set to zero
-		imHdr[9] = 0;
-
-		// Now begins the header proper...
-
-		int keyOffset = 10;
-		short lblOffset = ADACDictionary.LABEL_OFFSET;
+		// ... unused byte
+		keyBuffer.position(10);
 
 		// ... first parse the image info and save any ADAC tags
 		// these may be overwritten later (for tags like dimensions)
-
 		Object obj = imp.getProperty("Info");
 		String strInfo = obj.toString();
+		int labelOffset = 0;
+		int numLabels = 0;
+		valBuffer.position(ADACDictionary.LABEL_OFFSET);
 
 		for (int i = 0; i < ADACDictionary.NUM_KEYS; i++) {
 
 			int offset;
+			numLabels++;
+			
+			// Terminate the label with a null... obviously do not put
+			// one in the zeroth position
+			if( i != 0) {
+				labelOffset = valBuffer.position() + 1;
+				valBuffer.position(labelOffset);
+			}
 
 			// Look for occurences of Key descriptions
 			int intIndex = -1;
@@ -143,20 +137,20 @@ public class ADACEncoder {
 				// The dictionary knows...
 				switch (dict.type[i + 1]) {
 
-				case 4: // variable
+				  case 4: // variable
 
 					// I haven't seen a use case for this
 					labType[0] = (byte) 4;
 					break;
 
-				case 3: // Float
+				  case 3: // Float
 
 					labType[0] = (byte) 3;
 
 					try {
 
 						float num = Float.parseFloat(strTemp);
-						floatToHeader(num, lblOffset);
+						valBuffer.putFloat(num);
 
 					} catch (NumberFormatException e) {
 						IJ.log("Unable to parse floating point data\n"
@@ -165,14 +159,14 @@ public class ADACEncoder {
 
 					break;
 
-				case 2: // Integer
+				  case 2: // Integer
 
 					labType[0] = (byte) 2;
 
 					try {
 
 						int num = Integer.parseInt(strTemp);
-						intToHeader(num, lblOffset);
+						valBuffer.putInt(num);
 
 					} catch (NumberFormatException e) {
 						IJ.log("Unable to parse integer data\n" + strTemp);
@@ -180,14 +174,14 @@ public class ADACEncoder {
 
 					break;
 
-				case 1: // Short
+				  case 1: // Short
 
 					labType[0] = (byte) 1;
 
 					try {
 						
 						short num = Short.parseShort(strTemp);
-						shortToHeader(num, lblOffset);
+						valBuffer.putShort(num);
 					
 					} catch (NumberFormatException e) {
 						IJ.log("Unable to parse short data\n" + strTemp);
@@ -195,11 +189,11 @@ public class ADACEncoder {
 
 					break;
 
-				case 5:
+				  case 5:
 					// ADACDictionary class uses this to differentiate string
 					// from byte, but in ADAC images does not exist - just byte
-				case 0: // Byte
-				default:
+				  case 0: // Byte
+				  default:
 					// default to byte
 					labType[0] = (byte) 0;
 
@@ -218,109 +212,42 @@ public class ADACEncoder {
 					}
 
 					// Write the data into the header at the correct offset
-					charsToHeader(buffer.toString(), lblOffset);
+					valBuffer.put(buffer.toString().getBytes());
 
 				}
 
 				// Write the key value that refers to this header item in
 				// form:
 				// AA#!&&;
+				
 				// AA = label (or key) number;
-				shortToHeader((short) (i + 1), keyOffset);
-
-				// ...and calculate the location for the next key
-				keyOffset += 2;
+				keyBuffer.putShort( (short) (i + 1));
 
 				// # = byte to define label type
-				bytesToHeader(labType, keyOffset);
+				keyBuffer.put(labType);
 
 				// ! = unused byte
-				keyOffset += 2;
+				keyBuffer.putChar('0');
 
 				// && = short offset in the file to the data
-				shortToHeader(lblOffset, keyOffset);
-				keyOffset += 2;
+				keyBuffer.putShort( (short) labelOffset);
 
-				IJ.log(strTemp);
-				IJ.log("Done");
-
-				// Terminate each item with a null
-				lblOffset++;
-				// Recalculate the offset to the next label:
-				lblOffset += (short) len;
 			}
 		}
 
 		// Fill in the number of labels
-		imHdr[7] = noLabels;
-		IJ.log("hdr7 = " + noLabels);
-
-	}
-
-	private void intToHeader(int num, short loc) {
-
-		// Convert to array of bytes
-		byte[] bytes = ByteBuffer.allocate(4).putInt(num).array();
-		// Write into header
-		bytesToHeader(bytes, loc);
-
-	}
-
-	void charsToHeader(String s, int loc) {
-		int len = s.length();
-
-		for (int i = 0; i < len; i++) {
-			byte m_char = (byte) s.charAt(i);
-			imHdr[loc + i] = m_char;
-		}
-	}
-
-	void bytesToHeader(byte[] m_Byte, int loc) {
-		int len = m_Byte.length;
-		for (int i = 0; i < len; i++) {
-			imHdr[loc + i] = m_Byte[i];
-		}
-	}
-
-	void shortToHeader(short m_Short, int loc) {
-		bytesToHeader(shortToBytes(m_Short), loc);
-	}
-
-	void floatToHeader(float aFloat, int loc) {
-
-		// Convert to array of bytes
-		ByteBuffer buffer = ByteBuffer.allocate(4);
-		buffer.order(ByteOrder.BIG_ENDIAN);
-		buffer.putFloat(aFloat);
-		byte[] bytes = buffer.array();
-		// Write into header
-		bytesToHeader(bytes, loc);
-		
-		buffer = ByteBuffer.allocate(4);
-		buffer.order(ByteOrder.BIG_ENDIAN);
-		buffer.put(bytes);
-		buffer.position(0);
-		float f = buffer.getFloat();
-		
-		int res = bytes[3];
-	      res += (((long) bytes[2]) << 8);
-	      res += (((long) bytes[1]) << 16);
-	      res += (((long) bytes[0]) << 24);
-	      
-	      float f2 = Float.intBitsToFloat(res);
-	      System.out.println("f = " + f + "\nf2 = " + f2);
+		keyBuffer.putShort( (short) noLabels);
 
 	}
 
 	void writeHeader(OutputStream out) throws IOException {
+		
 		buildHeader();
-		out.write(imHdr);
+		
+		valBuffer.position(0);
+		valBuffer.put(keyBuffer.array());
+		
+		out.write(valBuffer.array());
 	}
 
-	byte[] shortToBytes(short m_Short) {
-		byte[] m_Byte = new byte[2];
-		m_Byte[isLittleEndian ? 0 : 1] = (byte) (0xff & m_Short);
-		m_Byte[isLittleEndian ? 1 : 0] = (byte) (((0xff << 8) & m_Short) >> 8);
-		return m_Byte;
-	}
 }
