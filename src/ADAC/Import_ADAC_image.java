@@ -6,7 +6,6 @@ import ij.io.FileInfo;
 import ij.io.FileOpener;
 import ij.io.OpenDialog;
 import ij.plugin.PlugIn;
-import ij.process.ImageProcessor;
 
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
@@ -183,7 +182,7 @@ class ADACDecoder {
 
     if(fi.intelByteOrder){
     	keyBuffer.order(ByteOrder.LITTLE_ENDIAN);
-    	valBuffer.order(ByteOrder.BIG_ENDIAN);
+    	valBuffer.order(ByteOrder.LITTLE_ENDIAN);
     }
     
     keyBuffer.put(bytHeader);
