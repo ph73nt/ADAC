@@ -71,7 +71,7 @@ public class ADACEncoder {
 		keyBuffer.position(8);
 
 		// ... Number of sub-headers - usually 2 for normal images
-		keyBuffer.putChar('2');
+		keyBuffer.put( (byte) 2);
 
 		// ... unused byte
 		keyBuffer.position(10);
@@ -227,16 +227,17 @@ public class ADACEncoder {
 				keyBuffer.put(labType);
 
 				// ! = unused byte
-				keyBuffer.putChar('0');
+				keyBuffer.put( (byte) 0);
 
 				// && = short offset in the file to the data
-				keyBuffer.putShort( (short) labelOffset);
+				keyBuffer.putShort( (short) (labelOffset + ADACDictionary.LABEL_OFFSET));
 
 			}
 		}
 
 		// Fill in the number of labels
-		keyBuffer.putShort( (short) noLabels);
+		keyBuffer.position(7);
+		keyBuffer.put(noLabels);
 
 	}
 
