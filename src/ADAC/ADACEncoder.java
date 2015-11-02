@@ -15,8 +15,9 @@ public class ADACEncoder {
 	private FileInfo fi;
 	private int bitsPerSample, photoInterp, imageSize;
 	private long stackSize;
-	private ByteBuffer keyBuffer = ByteBuffer.allocate(ADACDictionary.LABEL_OFFSET);
-	private ByteBuffer valBuffer = ByteBuffer.allocate(ADACDictionary.IM_OFFSET);
+	private byte[] bytes = new byte[ADACDictionary.IM_OFFSET];
+	private ByteBuffer keyBuffer; // = ByteBuffer.allocate(ADACDictionary.LABEL_OFFSET);
+	private ByteBuffer valBuffer; // = ByteBuffer.allocate(ADACDictionary.IM_OFFSET);
 	private final boolean isLittleEndian = false; // bigendian
 	private ImagePlus imp;
 	private ADACDictionary dict = new ADACDictionary();
@@ -50,6 +51,7 @@ public class ADACEncoder {
 		imageSize = fi.width * fi.height * bytesPerPixel;
 		stackSize = (long) imageSize * fi.nImages;
 		fi.offset = ADACDictionary.IM_OFFSET;
+		
 	}
 
 	public void write(OutputStream out) throws IOException {
@@ -243,12 +245,14 @@ public class ADACEncoder {
 
 	void writeHeader(OutputStream out) throws IOException {
 		
+		keyBuffer = ByteBuffer.wrap(bytes, 0, ADACDictionary.LABEL_OFFSET);
+		
+		int len = ADACDictionary.IM_OFFSET - ADACDictionary.LABEL_OFFSET;
+		valBuffer = ByteBuffer.wrap(bytes, ADACDictionary.LABEL_OFFSET, len);
+		
 		buildHeader();
 		
-		valBuffer.position(0);
-		valBuffer.put(keyBuffer.array());
-		
-		out.write(valBuffer.array());
+		out.write(bytes);
 	}
 
 }

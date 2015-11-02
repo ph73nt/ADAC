@@ -120,11 +120,12 @@ class ADACDecoder {
   private String directory, fileName;
   private boolean littleEndian = false;
   private int offset = 0;
-  private ByteBuffer keyBuffer = ByteBuffer.allocate(ADACDictionary.LABEL_OFFSET);
-  private ByteBuffer valBuffer = ByteBuffer.allocate(ADACDictionary.IM_OFFSET);
+  private ByteBuffer keyBuffer;
+  private ByteBuffer valBuffer;
   private ADACDictionary dict = new ADACDictionary();
   BufferedInputStream inputStream;
   private BufferedInputStream f;
+  private byte[] valHeaders;
 
   public String header, AD_Type, AD_ex_objs;
   public Vector values = new Vector();
@@ -176,20 +177,17 @@ class ADACDecoder {
 
     // Copy header into a byteBuffer for parsing forwards and backwards
     byte[] bytHeader = new byte[ADACDictionary.LABEL_OFFSET];
-    byte[] valHeader = new byte[ADACDictionary.IM_OFFSET];
+    valHeaders = new byte[ADACDictionary.IM_OFFSET];
     f.read(bytHeader, 0, bytHeader.length);
-    f.read(valHeader, ADACDictionary.LABEL_OFFSET, valHeader.length - ADACDictionary.LABEL_OFFSET);
+    f.read(valHeaders, ADACDictionary.LABEL_OFFSET, valHeaders.length - ADACDictionary.LABEL_OFFSET);
 
     if(fi.intelByteOrder){
     	keyBuffer.order(ByteOrder.LITTLE_ENDIAN);
     	valBuffer.order(ByteOrder.LITTLE_ENDIAN);
     }
     
-    keyBuffer.put(bytHeader);
-    keyBuffer.position(0);
-    
-    valBuffer.put(valHeader);
-    valBuffer.position(0);
+    keyBuffer = ByteBuffer.wrap(bytHeader);
+    valBuffer = ByteBuffer.wrap(valHeaders);
     
     // Parse the header
     header = getHeader();
@@ -477,14 +475,12 @@ class ADACDecoder {
 
   String getValString(int length, int offset) throws IOException {
 	  
+	  int theOffset = offset - ADACDictionary.LABEL_OFFSET;
+	  
 	  byte[] mBytes = new byte[length];
+	  System.arraycopy(valHeaders, theOffset, mBytes, 0, length);
 	  
-	  for (int i = 0; i < length; i++){
-		  mBytes[i] = valBuffer.get(offset + i);		  
-	  }
-	  
-	  String string = new String(mBytes);
-	  return string.trim();
+	  return new String(valHeaders).trim();
 	  
   }
   
