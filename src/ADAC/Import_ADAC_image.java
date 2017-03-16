@@ -369,21 +369,18 @@ class ADACDecoder {
   }
 
   FileInfo parseADACExtras(FileInfo fi) {
-    String anExtra, keyExtra;
-    for (int j = 0; j < 2; j++) {
+    
+	  final int INDX_CALB = 0;
+	  
+	  // Define ADAC extras that we will parse
+      String[] extras = {"CALB", "WLAA"};
+	  
+	  String anExtra;
+    
+    for (int j = 0; j < extras.length; j++) {
 
-      // Use switch to parse several "extra" parameters
-      switch (j) {
-        default:
-          keyExtra = null;
-        case 0:
-          keyExtra = "CALB";
-        case 1:
-          keyExtra = "WLAA";
-      }
-
-      int indxExtra = AD_ex_objs.indexOf(keyExtra);
-      if (indxExtra != -1 && !(keyExtra.equals(null))) {
+      int indxExtra = AD_ex_objs.indexOf(extras[j]);
+      if (indxExtra != -1 && !(extras[j].equals(null))) {
         IJ.log("CALB at " + indxExtra);
 
         byte[] someBytes;
@@ -391,7 +388,7 @@ class ADACDecoder {
         //  and 126 is the last (~);
         int i = 0;
         do {
-          int index = indxExtra + keyExtra.length() + i;
+          int index = indxExtra + extras[j].length() + i;
           anExtra = AD_ex_objs.substring(index, index + 1);
           someBytes = anExtra.getBytes();
           IJ.log("" + (int) someBytes[0]);
@@ -402,7 +399,7 @@ class ADACDecoder {
         String message = "";
         boolean continu = false;
         do {
-          int index = indxExtra + keyExtra.length() + i;
+          int index = indxExtra + extras[j].length() + i;
           anExtra = AD_ex_objs.substring(index, index + 1);
           someBytes = anExtra.getBytes();
           if ((int) someBytes[0] > 31 && (int) someBytes[0] < 127) {
@@ -418,7 +415,7 @@ class ADACDecoder {
         // Assuming the object is terminated by a non-printingcharacter,
         //  we have the full "extra."  Now use information in some extras:
         switch (j) {
-          case 0:
+          case INDX_CALB:
             // Calibration factor is size (mm) of a pixel if the image were
             //   scaled to 1024 pixels wide or high
             double calibF;
