@@ -129,8 +129,6 @@ class ADACDecoder {
 
   public String header, AD_Type, AD_ex_objs;
   public Vector values = new Vector();
-  public byte datTyp, unused;
-  public short keynum, fieldOffset;
   public int xdim, ydim, zdim, bitDepth, intervals, noSets;
   public double slice_t, frameTime;
 
@@ -233,9 +231,11 @@ class ADACDecoder {
     	// Attempt to find the next key...
         //   ...the keynum (description)
         //   ...the offset to the value
-        getKeys();
+    	ADACKey key = getKeys();
+    	short fieldOffset = key.getFieldOffset();
+    	short keynum = key.getKeyNum();
         
-        switch (datTyp) {
+        switch (key.getDataType()) {
         
           case ADACDictionary.BYTE:
             // Differentiate between byte proper and a string
@@ -349,7 +349,8 @@ class ADACDecoder {
         hdr += dict.descriptions[keynum] + " = "
                 + values.elementAt(keynum) + "\n";
 
-        IJ.log(keynum + ", " + datTyp + ", " + unused + ", " + fieldOffset + ", " + values.elementAt(keynum));
+        IJ.log(keynum + ", " + key.getDataType() + ", " + fieldOffset 
+        		+ ", " + values.elementAt(keynum));
         
       }
       
@@ -452,12 +453,14 @@ class ADACDecoder {
     return fi;
   }
 
-  void getKeys() throws IOException {
+  private ADACKey getKeys() throws IOException {
 	  
-    keynum = keyBuffer.getShort();
-    datTyp = keyBuffer.get();
-    unused = keyBuffer.get();
-    fieldOffset = keyBuffer.getShort();
+	short num = keyBuffer.getShort();
+    byte datTyp = keyBuffer.get();
+    keyBuffer.get(); // unused byte
+    short fieldOffset = keyBuffer.getShort();
+    
+    return new ADACKey(num, datTyp, fieldOffset);
   
   }
 
