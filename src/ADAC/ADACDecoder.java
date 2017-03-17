@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.ArrayList;
 import java.util.Vector;
 
 public class ADACDecoder {
@@ -22,7 +23,7 @@ public class ADACDecoder {
   private byte[] valHeaders;
 
   public String header, AD_Type, AD_ex_objs;
-  public Vector values = new Vector();
+  public String[] values = new String[ADACDictionary.NUM_KEYS + 1];
   public int xdim, ydim, zdim, bitDepth, intervals, noSets;
   public double slice_t, frameTime;
 
@@ -118,8 +119,6 @@ public class ADACDecoder {
       IJ.log(Integer.toString(keyBuffer.get()));  // Unused byte
 
       // For each header field available.. get them
-      values.setSize(ADACDictionary.NUM_KEYS + 1);
-
       for (short i = 0; i < labels; i++) {
         
     	// Attempt to find the next key...
@@ -138,19 +137,18 @@ public class ADACDecoder {
               switch (keynum) {
                 case 114:
                   AD_ex_objs = getValString(dict.valLength[keynum], fieldOffset);
-                  values.setElementAt(AD_ex_objs, keynum);
+                  values[keynum] = AD_ex_objs;
                   break;
                 case 17:
                   AD_Type = getValString(dict.valLength[keynum], fieldOffset);
-                  values.setElementAt(AD_Type, keynum);
+                  values[keynum] = AD_Type;
                   break;
                 default:
-                  values.setElementAt(
-                          getValString(dict.valLength[keynum], fieldOffset), keynum);
+                  values[keynum] = getValString(dict.valLength[keynum], fieldOffset);
                   break;
               }
             } else {
-              values.setElementAt(keyBuffer.get(fieldOffset), keynum);
+              values[keynum] = byteToString(keyBuffer.get(fieldOffset));
             }
             break;
             
@@ -206,7 +204,7 @@ public class ADACDecoder {
                 
             }
             
-            values.setElementAt(shortValue, keynum);
+            values[keynum] = "" + shortValue;
             break;
             
           case ADACDictionary.INT:
@@ -221,7 +219,7 @@ public class ADACDecoder {
                 break;
                 
             }
-            values.setElementAt(m_Int, keynum);
+            values[keynum] = "" + m_Int;
             break;
             
           case ADACDictionary.FLOAT:
@@ -235,24 +233,18 @@ public class ADACDecoder {
                 
             }
             
-            values.setElementAt(floatValue, keynum);
+            values[keynum] = "" + floatValue;
             break;
             
         }
         
-        hdr += dict.descriptions[keynum] + " = "
-                + values.elementAt(keynum) + "\n";
+        hdr += dict.descriptions[keynum] + " = " + values[keynum] + "\n";
 
-        IJ.log(keynum + ", " + key.getDataType() + ", " + fieldOffset 
-        		+ ", " + values.elementAt(keynum));
+        IJ.log(keynum + ", " + key.getDataType() + ", " + fieldOffset + ", " + values[keynum]);
         
       }
       
-      IJ.log("" + values.size());
-
-      /////////////// Get ready for the next code:
-//      getKeys();
-//      IJ.log(Integer.toString(keynum));
+      IJ.log("" + values.length);
 
       return hdr;
       
@@ -263,7 +255,7 @@ public class ADACDecoder {
     }
   }
 
-  FileInfo parseADACExtras(FileInfo fi) {
+  private FileInfo parseADACExtras(FileInfo fi) {
     
 	  final int INDX_CALB = 0;
 	  
@@ -338,13 +330,19 @@ public class ADACDecoder {
     return fi;
   }
 
-  FileInfo setFrames(FileInfo fi) {
+  private FileInfo setFrames(FileInfo fi) {
     if (AD_Type.matches("GE")) { // Gated SPECT doesn't yet work!
       fi.nImages = noSets * intervals;
     } else {
       fi.nImages = zdim;
     }
     return fi;
+  }
+  
+  private String byteToString(byte b){
+	  
+     return new String(new byte[]{b});
+	  
   }
 
   private ADACKey getKeys() throws IOException {
@@ -358,7 +356,7 @@ public class ADACDecoder {
   
   }
 
-  String getKeyString(int length) throws IOException {
+  private String getKeyString(int length) throws IOException {
 	  
 	  byte[] mBytes = new byte[length];
 	  keyBuffer.get(mBytes, 0, length);
@@ -367,7 +365,7 @@ public class ADACDecoder {
 	  
   }
 
-  String getValString(int length, int offset) throws IOException {
+  private String getValString(int length, int offset) throws IOException {
 	  
 	  int theOffset = offset - ADACDictionary.LABEL_OFFSET;
 	  
