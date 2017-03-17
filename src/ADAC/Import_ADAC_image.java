@@ -44,7 +44,7 @@ public class Import_ADAC_image extends ImagePlus implements PlugIn {
     IJ.showStatus("Opening: " + directory + fileName);
     FileInfo fi = null;
     ADACDecoder ad = new ADACDecoder(directory, fileName);
-    ad.inputStream = inputStream;
+    ad.setInputStream(inputStream);
     
     try {
       fi = ad.getFileInfo();

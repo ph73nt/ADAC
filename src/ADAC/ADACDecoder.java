@@ -18,7 +18,7 @@ public class ADACDecoder {
   private ByteBuffer keyBuffer;
   private ByteBuffer valBuffer;
   private ADACDictionary dict = new ADACDictionary();
-  BufferedInputStream inputStream;
+  private BufferedInputStream inputStream;
   private BufferedInputStream f;
   private byte[] valHeaders;
 
@@ -30,6 +30,14 @@ public class ADACDecoder {
   public ADACDecoder(String directory, String fileName) {
     this.directory = directory;
     this.fileName = fileName;
+  }
+  
+  public BufferedInputStream getInputStream() {
+	  return inputStream;
+  }
+  
+  public void setInputStream(BufferedInputStream bis){
+	  inputStream = bis;
   }
 
   FileInfo getFileInfo() throws IOException {
@@ -99,7 +107,7 @@ public class ADACDecoder {
     
   }
 
-  String getHeader() throws IOException {
+  private String getHeader() throws IOException {
   
 	String hdr;
     
