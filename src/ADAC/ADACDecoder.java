@@ -14,8 +14,6 @@ import java.util.Vector;
 public class ADACDecoder {
 
   private String directory, fileName;
-  private boolean littleEndian = false;
-  private int offset = 0;
   private ByteBuffer keyBuffer;
   private ByteBuffer valBuffer;
   private ADACDictionary dict = new ADACDictionary();
