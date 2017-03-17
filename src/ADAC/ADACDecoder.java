@@ -40,7 +40,7 @@ public class ADACDecoder {
 	  inputStream = bis;
   }
 
-  FileInfo getFileInfo() throws IOException {
+  public FileInfo getFileInfo() throws IOException {
 
 	FileInfo fi = new FileInfo();
     fi.fileFormat = FileInfo.RAW;
