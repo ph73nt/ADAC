@@ -209,42 +209,42 @@ public class ADACDictionary {
     valLength[x] = 1;
 
     x = 28;
-    descriptions[x] = "Enery window 1 (center)";
+    descriptions[x] = "Energy window 1 (center)";
     type[x] = SHORT;
     valLength[x] = 2;
 
     x = 29;
-    descriptions[x] = "Enery window 1 (width)";
+    descriptions[x] = "Energy window 1 (width)";
     type[x] = SHORT;
     valLength[x] = 2;
 
     x = 30;
-    descriptions[x] = "Enery window 2 (center)";
+    descriptions[x] = "Energy window 2 (center)";
     type[x] = SHORT;
     valLength[x] = 2;
 
     x = 31;
-    descriptions[x] = "Enery window 2 (width)";
+    descriptions[x] = "Energy window 2 (width)";
     type[x] = SHORT;
     valLength[x] = 2;
 
     x = 32;
-    descriptions[x] = "Enery window 3 (center)";
+    descriptions[x] = "Energy window 3 (center)";
     type[x] = SHORT;
     valLength[x] = 2;
 
     x = 33;
-    descriptions[x] = "Enery window 3 (width)";
+    descriptions[x] = "Energy window 3 (width)";
     type[x] = SHORT;
     valLength[x] = 2;
 
     x = 34;
-    descriptions[x] = "Enery window 4 (center)";
+    descriptions[x] = "Energy window 4 (center)";
     type[x] = SHORT;
     valLength[x] = 2;
 
     x = 35;
-    descriptions[x] = "Enery window 4 (width)";
+    descriptions[x] = "Energy window 4 (width)";
     type[x] = SHORT;
     valLength[x] = 2;
 
