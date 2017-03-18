@@ -9,8 +9,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.ArrayList;
-import java.util.Vector;
 
 public class ADACDecoder {
 
@@ -350,12 +348,6 @@ public class ADACDecoder {
     return fi;
   }
   
-  private String byteToString(byte b){
-	  
-     return new String(new byte[]{b});
-	  
-  }
-
   private ADACKey getKeys() throws IOException {
 	  
 	short num = keyBuffer.getShort();
@@ -373,17 +365,6 @@ public class ADACDecoder {
 	  keyBuffer.get(mBytes, 0, length);
 	  String string = new String(mBytes);
 	  return string.trim();
-	  
-  }
-
-  private String getValString(int length, int offset) throws IOException {
-	  
-	  int theOffset = offset - ADACDictionary.LABEL_OFFSET;
-	  
-	  byte[] mBytes = new byte[length];
-	  System.arraycopy(valHeaders, theOffset, mBytes, 0, length);
-	  
-	  return new String(valHeaders).trim();
 	  
   }
   
