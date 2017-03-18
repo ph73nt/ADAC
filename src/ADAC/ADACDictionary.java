@@ -10,7 +10,7 @@ public class ADACDictionary {
   public static final int IM_OFFSET = 2048;
   public static final int NUM_KEYS = 114;
   public static final int BYTE = 0, SHORT = 1, INT = 2;
-  public static final int FLOAT = 3, VAR = 4, STRING = 5;
+  public static final int FLOAT = 3, VAR = 4;
   public String[] descriptions;
   public int[] type, valLength;
 
@@ -41,17 +41,17 @@ public class ADACDictionary {
 
     x = 1;
     descriptions[x] = "Patient name";
-    type[x] = STRING;
+    type[x] = BYTE;
     valLength[x] = 20;
 
     x = 2;
     descriptions[x] = "Patient ID";
-    type[x] = STRING;
+    type[x] = BYTE;
     valLength[x] = 11;
 
     x = 3;
     descriptions[x] = "Patient sex";
-    type[x] = STRING;
+    type[x] = BYTE;
     valLength[x] = 1;
 
     x = 4;
@@ -71,12 +71,12 @@ public class ADACDictionary {
 
     x = 76;
     descriptions[x] = "Unique patient key";
-    type[x] = STRING;
+    type[x] = BYTE;
     valLength[x] = 6;
 
     x = 109;
     descriptions[x] = "Date of birth";
-    type[x] = STRING;
+    type[x] = BYTE;
     valLength[x] = 8;  // YYYYMMDD
 
     ////////////////////////////////////////////////////////////
@@ -84,57 +84,57 @@ public class ADACDictionary {
     ////////////////////////////////////////////////////////////
     x = 7;
     descriptions[x] = "Acquisition date";
-    type[x] = STRING;
+    type[x] = BYTE;
     valLength[x] = 8;  //YYYYMMDD
 
     x = 8;
     descriptions[x] = "Dose admin. time";
-    type[x] = STRING;
+    type[x] = BYTE;
     valLength[x] = 8;  // HH:MM:SS
 
     x = 9;
     descriptions[x] = "Unique exam key";
-    type[x] = STRING;
+    type[x] = BYTE;
     valLength[x] = 8;
 
     x = 10;
     descriptions[x] = "Exam procedure";
-    type[x] = STRING;
+    type[x] = BYTE;
     valLength[x] = 36;
 
     x = 11;
     descriptions[x] = "Reffering physician";
-    type[x] = STRING;
+    type[x] = BYTE;
     valLength[x] = 20;
 
     x = 12;
     descriptions[x] = "Attending physician";
-    type[x] = STRING;
+    type[x] = BYTE;
     valLength[x] = 20;
 
     x = 13;
     descriptions[x] = "Imaging modality";
-    type[x] = STRING;
+    type[x] = BYTE;
     valLength[x] = 2;
 
     x = 14;
     descriptions[x] = "Institution name";
-    type[x] = STRING;
+    type[x] = BYTE;
     valLength[x] = 20;
 
     x = 82;
     descriptions[x] = "Nrml crv file name";
-    type[x] = STRING;
+    type[x] = BYTE;
     valLength[x] = 10;
 
     x = 15;
     descriptions[x] = "Histog. crv file name";
-    type[x] = STRING;
+    type[x] = BYTE;
     valLength[x] = 20;
 
     x = 16;
     descriptions[x] = "Acquisition start time";
-    type[x] = STRING;
+    type[x] = BYTE;
     valLength[x] = 10;
 
     ////////////////////////////////////////////////////////////
@@ -142,22 +142,22 @@ public class ADACDictionary {
     ////////////////////////////////////////////////////////////
     x = 17;
     descriptions[x] = "Data type";
-    type[x] = STRING;
+    type[x] = BYTE;
     valLength[x] = 2;
 
     x = 18;
     descriptions[x] = "Image view ID";
-    type[x] = STRING;
+    type[x] = BYTE;
     valLength[x] = 16;
 
     x = 83;
     descriptions[x] = "Unique object key";
-    type[x] = STRING;
+    type[x] = BYTE;
     valLength[x] = 3;
 
     x = 75;
     descriptions[x] = "Associated parent file";
-    type[x] = STRING;
+    type[x] = BYTE;
     valLength[x] = 20;
 
     ////////////////////////////////////////////////////////////
@@ -165,27 +165,27 @@ public class ADACDictionary {
     ////////////////////////////////////////////////////////////
     x = 19;
     descriptions[x] = "Imaging device name";
-    type[x] = STRING;
+    type[x] = BYTE;
     valLength[x] = 10;
 
     x = 20;
     descriptions[x] = "Device serial number";
-    type[x] = STRING;
+    type[x] = BYTE;
     valLength[x] = 12;
 
     x = 21;
     descriptions[x] = "Collimator used";
-    type[x] = STRING;
+    type[x] = BYTE;
     valLength[x] = 6;
 
     x = 22;
     descriptions[x] = "Software version number";
-    type[x] = STRING;
+    type[x] = BYTE;
     valLength[x] = 8;
 
     x = 23;
     descriptions[x] = "Radiopharmaceutical 1";
-    type[x] = STRING;
+    type[x] = BYTE;
     valLength[x] = 16;
 
     x = 24;
@@ -195,7 +195,7 @@ public class ADACDictionary {
 
     x = 25;
     descriptions[x] = "Radiopharmaceutical 2";
-    type[x] = STRING;
+    type[x] = BYTE;
     valLength[x] = 16;
 
     x = 26;
@@ -205,7 +205,7 @@ public class ADACDictionary {
 
     x = 27;
     descriptions[x] = "Isotope imaging mode";
-    type[x] = STRING;
+    type[x] = BYTE;
     valLength[x] = 1;
 
     x = 28;
@@ -250,12 +250,12 @@ public class ADACDictionary {
 
     x = 36;
     descriptions[x] = "Patient orientation";
-    type[x] = STRING;
+    type[x] = BYTE;
     valLength[x] = 6;
 
     x = 110;
     descriptions[x] = "Directional orientation";
-    type[x] = STRING;
+    type[x] = BYTE;
     valLength[x] = 1;
 
     x = 37;
@@ -295,12 +295,12 @@ public class ADACDictionary {
 
     x = 85;
     descriptions[x] = "True colour flag";
-    type[x] = STRING;
+    type[x] = BYTE;
     valLength[x] = 1;
 
     x = 43;
     descriptions[x] = "Uniformity correction";
-    type[x] = STRING;
+    type[x] = BYTE;
     valLength[x] = 20;
 
     x = 44;
@@ -310,7 +310,7 @@ public class ADACDictionary {
 
     x = 111;
     descriptions[x] = "VFR struct";
-    type[x] = STRING;
+    type[x] = BYTE;
     valLength[x] = 64;
 
     ////////////////////////////////////////////////////////////
@@ -334,7 +334,7 @@ public class ADACDictionary {
 
     x = 84;
     descriptions[x] = "Unused";
-    type[x] = STRING;
+    type[x] = BYTE;
     valLength[x] = 8;
 
     x = 48;
@@ -417,12 +417,12 @@ public class ADACDictionary {
 
     x = 59;
     descriptions[x] = "Direction of rotation";
-    type[x] = STRING;  // "+" or "-"
+    type[x] = BYTE;  // "+" or "-"
     valLength[x] = 1;
 
     x = 60;
     descriptions[x] = "Reorientation type";
-    type[x] = STRING;  // C for cardiac, B for brain, N for normal
+    type[x] = BYTE;  // C for cardiac, B for brain, N for normal
     valLength[x] = 1;
 
     x = 61;
@@ -451,7 +451,7 @@ public class ADACDictionary {
 
     x = 65;
     descriptions[x] = "Customised colour map";
-    type[x] = STRING;
+    type[x] = BYTE;
     valLength[x] = 20;  // Filename (very short, should be in same dir)
 
 
@@ -461,7 +461,7 @@ public class ADACDictionary {
 
     x = 66;
     descriptions[x] = "Manipulated image";
-    type[x] = STRING;
+    type[x] = BYTE;
     valLength[x] = 1;   // Y/N
 
     x = 67;
@@ -481,7 +481,7 @@ public class ADACDictionary {
 
     x = 70;
     descriptions[x] = "Filter type";
-    type[x] = STRING;
+    type[x] = BYTE;
     valLength[x] = 16;
 
     x = 71;
@@ -496,7 +496,7 @@ public class ADACDictionary {
 
     x = 73;
     descriptions[x] = "Reconstruction type";
-    type[x] = STRING;
+    type[x] = BYTE;
     valLength[x] = 4; // eg OSA = oblique short axis
 
     x = 74;
@@ -510,7 +510,7 @@ public class ADACDictionary {
 
     x = 114;
     descriptions[x] = "Program specific";
-    type[x] = STRING;
+    type[x] = BYTE;
     valLength[x] = 800;
 
 
