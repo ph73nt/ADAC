@@ -139,25 +139,28 @@ public class ADACDecoder {
         switch (key.getDataType()) {
         
           case ADACDictionary.BYTE:
-            // Differentiate between byte proper and a string
-            //  (ADAC header does not)
-            if (dict.type[keynum] == ADACDictionary.STRING) {
-              switch (keynum) {
+        	  
+        	  // How long is this byte[]?
+        	  int len = dict.valLength[keynum];
+        	  byte[] bytes = new byte[len];
+        	  
+        	  // Move the value buffer to the correct location
+        	  valBuffer.position(fieldOffset);
+        	  valBuffer.get(bytes, 0, len);
+        	  String string = new String(bytes);
+        	  values[keynum] = string;
+
+            switch (keynum) {
                 case 114:
-                  AD_ex_objs = getValString(dict.valLength[keynum], fieldOffset);
+                	// ADAC "extras"
+                  AD_ex_objs = string;
                   values[keynum] = AD_ex_objs;
                   break;
                 case 17:
-                  AD_Type = getValString(dict.valLength[keynum], fieldOffset);
-                  values[keynum] = AD_Type;
-                  break;
-                default:
-                  values[keynum] = getValString(dict.valLength[keynum], fieldOffset);
+                  AD_Type = string;
                   break;
               }
-            } else {
-              values[keynum] = byteToString(keyBuffer.get(fieldOffset));
-            }
+        	          	  
             break;
             
           case ADACDictionary.SHORT:
