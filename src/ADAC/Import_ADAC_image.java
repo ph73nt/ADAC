@@ -52,7 +52,7 @@ public class Import_ADAC_image extends ImagePlus implements PlugIn {
       String msg = e.getMessage();
       msg = "This does not appear to be a valid\n"
               + "ADAC file.";
-      IJ.error("ADACDecoder", msg);
+      Log.error("ADACDecoder", msg);
       return;
     }
     
@@ -102,7 +102,7 @@ public class Import_ADAC_image extends ImagePlus implements PlugIn {
       }
       
     } else { //if (showErrors)
-      IJ.error("ADACDecoder", "Unable to decode ADAC header.");
+      Log.error("ADACDecoder", "Unable to decode ADAC header.");
     }
     
     IJ.showStatus("");

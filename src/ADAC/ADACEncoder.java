@@ -113,8 +113,8 @@ public class ADACEncoder {
 			// -1 returned if description not found
 			if (intIndex > -1) {
 
-				IJ.log("ADAC header label " + ++noLabels);
-				IJ.log("Found " + dict.descriptions[i + 1]);
+				Log.log("ADAC header label " + ++noLabels);
+				Log.log("Found " + dict.descriptions[i + 1]);
 				int len = dict.valLength[i + 1];
 
 				// Calculate the final character position in the string -
@@ -131,7 +131,7 @@ public class ADACEncoder {
 					strTemp = strInfo.substring(from);
 				}
 
-				IJ.log(strTemp);
+				Log.log(strTemp);
 
 				// Decide what sort of data this is for writing into the header.
 				byte[] labType = new byte[1];
@@ -155,7 +155,7 @@ public class ADACEncoder {
 						valBuffer.putFloat(num);
 
 					} catch (NumberFormatException e) {
-						IJ.log("Unable to parse floating point data\n"
+						Log.log("Unable to parse floating point data\n"
 								+ strTemp);
 					}
 
@@ -171,7 +171,7 @@ public class ADACEncoder {
 						valBuffer.putInt(num);
 
 					} catch (NumberFormatException e) {
-						IJ.log("Unable to parse integer data\n" + strTemp);
+						Log.log("Unable to parse integer data\n" + strTemp);
 					}
 
 					break;
@@ -186,7 +186,7 @@ public class ADACEncoder {
 						valBuffer.putShort(num);
 					
 					} catch (NumberFormatException e) {
-						IJ.log("Unable to parse short data\n" + strTemp);
+						Log.log("Unable to parse short data\n" + strTemp);
 					}
 
 					break;

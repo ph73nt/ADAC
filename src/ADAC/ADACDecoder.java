@@ -67,12 +67,7 @@ public class ADACDecoder {
       f = new BufferedInputStream(new FileInputStream(directory + fileName));
     }
     
-    if (IJ.debugMode) {
-    	
-      IJ.log("");
-      IJ.log("ADACDecoder: decoding " + fileName);
-      
-    }
+    Log.log("\nADACDecoder: decoding " + fileName);
 
     // Copy header into a byteBuffer for parsing forwards and backwards
     byte[] bytHeader = new byte[ADACDictionary.LABEL_OFFSET];
@@ -115,14 +110,14 @@ public class ADACDecoder {
 
     // First 10 bytes reserved for preamble
     hdr = getKeyString(6) + "\n";
-    IJ.log(hdr);                 // says adac01
+    Log.log(hdr);                 // says adac01
 
     try {
     	
       short labels = keyBuffer.getShort();
-      IJ.log(Integer.toString(labels)); // Number of labels in header
-      IJ.log(Integer.toString(keyBuffer.get()));  // Number of sub-headers
-      IJ.log(Integer.toString(keyBuffer.get()));  // Unused byte
+      Log.log(Integer.toString(labels)); // Number of labels in header
+      Log.log(Integer.toString(keyBuffer.get()));  // Number of sub-headers
+      Log.log(Integer.toString(keyBuffer.get()));  // Unused byte
 
       // For each header field available.. get them
       for (short i = 0; i < labels; i++) {
@@ -203,12 +198,12 @@ public class ADACDecoder {
                 
               case 86:
                 noSets = shortValue;
-                IJ.log("" + noSets);
+                Log.log("" + noSets);
                 break;
                 
               case 61:
                 intervals = shortValue;
-                IJ.log("" + intervals);
+                Log.log("" + intervals);
                 break;
                 
             }
@@ -249,16 +244,16 @@ public class ADACDecoder {
         
         hdr += dict.descriptions[keynum] + " = " + values[keynum] + "\n";
 
-        IJ.log(keynum + ", " + key.getDataType() + ", " + fieldOffset + ", " + values[keynum]);
+        Log.log(keynum + ", " + key.getDataType() + ", " + fieldOffset + ", " + values[keynum]);
         
       }
       
-      IJ.log("" + values.length);
+      Log.log("" + values.length);
 
       return hdr;
       
     } catch (IOException e) {
-      IJ.error("Failed to retrieve ADAC image file header. "
+      Log.error("ADAC Decoder", "Failed to retrieve ADAC image file header. "
               + "Is this an ADAC image file?");
       return null;
     }
@@ -277,7 +272,7 @@ public class ADACDecoder {
 
       int indxExtra = AD_ex_objs.indexOf(extras[j]);
       if (indxExtra != -1 && !(extras[j].equals(null))) {
-        IJ.log("CALB at " + indxExtra);
+        Log.log("CALB at " + indxExtra);
 
         byte[] someBytes;
         // Check we've got readable ASCII chars - 32 is the first (space)
@@ -287,7 +282,7 @@ public class ADACDecoder {
           int index = indxExtra + extras[j].length() + i;
           anExtra = AD_ex_objs.substring(index, index + 1);
           someBytes = anExtra.getBytes();
-          IJ.log("" + (int) someBytes[0]);
+          Log.log("" + (int) someBytes[0]);
           i++;
         } while ((int) someBytes[0] < 32 && (int) someBytes[0] > 126);
         // We should have skipped any rubbish preamble, like a shift or STX
@@ -304,7 +299,7 @@ public class ADACDecoder {
           } else {
             continu = false;
           }
-          IJ.log("" + (int) someBytes[0]);
+          Log.log("" + (int) someBytes[0]);
           i++;
         } while (continu);
 
@@ -324,13 +319,13 @@ public class ADACDecoder {
                 fi.unit = "mm";
               }
             } catch (NumberFormatException e) {
-              IJ.log("Unable to parse calibration factor");
+              Log.log("Unable to parse calibration factor");
             }
             break;
           case 1:
             
         }
-        IJ.log(message);
+        Log.log(message);
         message = "";
 
       }
