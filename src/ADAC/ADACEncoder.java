@@ -1,6 +1,5 @@
 package ADAC;
 
-import ij.IJ;
 import ij.ImagePlus;
 import ij.io.FileInfo;
 
@@ -8,7 +7,6 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 
 public class ADACEncoder {
 
@@ -16,8 +14,10 @@ public class ADACEncoder {
 	private int bitsPerSample, photoInterp, imageSize;
 	private long stackSize;
 	private byte[] bytes = new byte[ADACDictionary.IM_OFFSET];
-	private ByteBuffer keyBuffer; // = ByteBuffer.allocate(ADACDictionary.LABEL_OFFSET);
-	private ByteBuffer valBuffer; // = ByteBuffer.allocate(ADACDictionary.IM_OFFSET);
+	private ByteBuffer keyBuffer; // =
+									// ByteBuffer.allocate(ADACDictionary.LABEL_OFFSET);
+	private ByteBuffer valBuffer; // =
+									// ByteBuffer.allocate(ADACDictionary.IM_OFFSET);
 	private final boolean isLittleEndian = false; // bigendian
 	private ImagePlus imp;
 	private ADACDictionary dict = new ADACDictionary();
@@ -51,7 +51,7 @@ public class ADACEncoder {
 		imageSize = fi.width * fi.height * bytesPerPixel;
 		stackSize = (long) imageSize * fi.nImages;
 		fi.offset = ADACDictionary.IM_OFFSET;
-		
+
 	}
 
 	public void write(OutputStream out) throws IOException {
@@ -73,7 +73,7 @@ public class ADACEncoder {
 		keyBuffer.position(8);
 
 		// ... Number of sub-headers - usually 2 for normal images
-		keyBuffer.put( (byte) 2);
+		keyBuffer.put((byte) 2);
 
 		// ... unused byte
 		keyBuffer.position(10);
@@ -90,10 +90,10 @@ public class ADACEncoder {
 
 			int offset;
 			numLabels++;
-			
+
 			// Terminate the label with a null... obviously do not put
 			// one in the zeroth position
-			if( i != 0) {
+			if (i != 0) {
 				labelOffset = valBuffer.position() + 1;
 				valBuffer.position(labelOffset);
 			}
@@ -139,13 +139,13 @@ public class ADACEncoder {
 				// The dictionary knows...
 				switch (dict.type[i + 1]) {
 
-				  case 4: // variable
+				case 4: // variable
 
 					// I haven't seen a use case for this
 					labType[0] = (byte) 4;
 					break;
 
-				  case 3: // Float
+				case 3: // Float
 
 					labType[0] = (byte) 3;
 
@@ -161,7 +161,7 @@ public class ADACEncoder {
 
 					break;
 
-				  case 2: // Integer
+				case 2: // Integer
 
 					labType[0] = (byte) 2;
 
@@ -176,26 +176,26 @@ public class ADACEncoder {
 
 					break;
 
-				  case 1: // Short
+				case 1: // Short
 
 					labType[0] = (byte) 1;
 
 					try {
-						
+
 						short num = Short.parseShort(strTemp);
 						valBuffer.putShort(num);
-					
+
 					} catch (NumberFormatException e) {
 						Log.log("Unable to parse short data\n" + strTemp);
 					}
 
 					break;
 
-				  case 5:
+				case 5:
 					// ADACDictionary class uses this to differentiate string
 					// from byte, but in ADAC images does not exist - just byte
-				  case 0: // Byte
-				  default:
+				case 0: // Byte
+				default:
 					// default to byte
 					labType[0] = (byte) 0;
 
@@ -221,18 +221,19 @@ public class ADACEncoder {
 				// Write the key value that refers to this header item in
 				// form:
 				// AA#!&&;
-				
+
 				// AA = label (or key) number;
-				keyBuffer.putShort( (short) (i + 1));
+				keyBuffer.putShort((short) (i + 1));
 
 				// # = byte to define label type
 				keyBuffer.put(labType);
 
 				// ! = unused byte
-				keyBuffer.put( (byte) 0);
+				keyBuffer.put((byte) 0);
 
 				// && = short offset in the file to the data
-				keyBuffer.putShort( (short) (labelOffset + ADACDictionary.LABEL_OFFSET));
+				keyBuffer
+						.putShort((short) (labelOffset + ADACDictionary.LABEL_OFFSET));
 
 			}
 		}
@@ -244,14 +245,14 @@ public class ADACEncoder {
 	}
 
 	void writeHeader(OutputStream out) throws IOException {
-		
+
 		keyBuffer = ByteBuffer.wrap(bytes, 0, ADACDictionary.LABEL_OFFSET);
-		
+
 		int len = ADACDictionary.IM_OFFSET - ADACDictionary.LABEL_OFFSET;
 		valBuffer = ByteBuffer.wrap(bytes, ADACDictionary.LABEL_OFFSET, len);
-		
+
 		buildHeader();
-		
+
 		out.write(bytes);
 	}
 

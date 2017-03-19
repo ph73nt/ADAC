@@ -17,95 +17,94 @@ import java.io.InputStream;
  */
 public class Import_ADAC_image extends ImagePlus implements PlugIn {
 
-  private BufferedInputStream inputStream;
+	private BufferedInputStream inputStream;
 
-  public Import_ADAC_image() {
-  }
+	public Import_ADAC_image() {
+	}
 
-  public Import_ADAC_image(InputStream is) {
-    this(new BufferedInputStream(is));
-  }
+	public Import_ADAC_image(InputStream is) {
+		this(new BufferedInputStream(is));
+	}
 
-  /** Constructs a DICOM reader that using an BufferredInputStream. */
-  public Import_ADAC_image(BufferedInputStream bis) {
-    inputStream = bis;
-  }
+	/** Constructs a DICOM reader that using an BufferredInputStream. */
+	public Import_ADAC_image(BufferedInputStream bis) {
+		inputStream = bis;
+	}
 
-  public void run(String arg) {
-	  
-    OpenDialog od = new OpenDialog("Open ADAC image file...", arg);
-    String directory = od.getDirectory();
-    String fileName = od.getFileName();
-    
-    if (fileName == null) {
-      return;
-    }
-    
-    IJ.showStatus("Opening: " + directory + fileName);
-    FileInfo fi = null;
-    ADACDecoder ad = new ADACDecoder(directory, fileName);
-    ad.setInputStream(inputStream);
-    
-    try {
-      fi = ad.getFileInfo();
-    } catch (IOException e) {
-      String msg = e.getMessage();
-      msg = "This does not appear to be a valid\n"
-              + "ADAC file.";
-      Log.error("ADACDecoder", msg);
-      return;
-    }
-    
-    if (fi != null && fi.width > 0 && fi.height > 0 && fi.offset > 0) {
-    	
-      FileOpener fo = new FileOpener(fi);
-      ImagePlus imp = fo.open(false);
-//      ImageProcessor ip = imp.getProcessor();
+	public void run(String arg) {
 
-      /*if (fi.fileType == FileInfo.GRAY16_SIGNED) {
-      if (ad.rescaleIntercept != 0.0 && dd.rescaleSlope == 1.0) {
-      ip.add(ad.rescaleIntercept);
-      }
-      } else if (dd.rescaleIntercept != 0.0 && (dd.rescaleSlope == 1.0 || fi.fileType == FileInfo.GRAY8)) {
-      double[] coeff = new double[2];
-      coeff[0] = dd.rescaleIntercept;
-      coeff[1] = dd.rescaleSlope;
-      imp.getCalibration().setFunction(Calibration.STRAIGHT_LINE, coeff, "gray value");
-      }*/
+		OpenDialog od = new OpenDialog("Open ADAC image file...", arg);
+		String directory = od.getDirectory();
+		String fileName = od.getFileName();
 
-//      if (dd.windowWidth > 0.0) {
-//        double min = dd.windowCenter - dd.windowWidth / 2;
-//        double max = dd.windowCenter + dd.windowWidth / 2;
-//        Calibration cal = imp.getCalibration();
-//        min = cal.getRawValue(min);
-//        max = cal.getRawValue(max);
-//        ip.setMinAndMax(min, max);
-//        if (IJ.debugMode) {
-//          IJ.log("window: " + min + "-" + max);
-//        }
-//      }
-      
-      if (imp.getStackSize() > 1) {
-        setStack(fileName, imp.getStack());
-      } else {
-        setProcessor(fileName, imp.getProcessor());
-      }
-      
-      setCalibration(imp.getCalibration());
+		if (fileName == null) {
+			return;
+		}
 
-      setProperty("Info", ad.header);//getHeader());
+		IJ.showStatus("Opening: " + directory + fileName);
+		FileInfo fi = null;
+		ADACDecoder ad = new ADACDecoder(directory, fileName);
+		ad.setInputStream(inputStream);
 
-      setFileInfo(fi); // needed for revert
-      
-      if (arg.equals("")) {
-        show();
-      }
-      
-    } else { //if (showErrors)
-      Log.error("ADACDecoder", "Unable to decode ADAC header.");
-    }
-    
-    IJ.showStatus("");
+		try {
+			fi = ad.getFileInfo();
+		} catch (IOException e) {
+			String msg = e.getMessage();
+			msg = "This does not appear to be a valid\n" + "ADAC file.";
+			Log.error("ADACDecoder", msg);
+			return;
+		}
 
-  }
+		if (fi != null && fi.width > 0 && fi.height > 0 && fi.offset > 0) {
+
+			FileOpener fo = new FileOpener(fi);
+			ImagePlus imp = fo.open(false);
+			// ImageProcessor ip = imp.getProcessor();
+
+			/*
+			 * if (fi.fileType == FileInfo.GRAY16_SIGNED) { if
+			 * (ad.rescaleIntercept != 0.0 && dd.rescaleSlope == 1.0) {
+			 * ip.add(ad.rescaleIntercept); } } else if (dd.rescaleIntercept !=
+			 * 0.0 && (dd.rescaleSlope == 1.0 || fi.fileType == FileInfo.GRAY8))
+			 * { double[] coeff = new double[2]; coeff[0] = dd.rescaleIntercept;
+			 * coeff[1] = dd.rescaleSlope;
+			 * imp.getCalibration().setFunction(Calibration.STRAIGHT_LINE,
+			 * coeff, "gray value"); }
+			 */
+
+			// if (dd.windowWidth > 0.0) {
+			// double min = dd.windowCenter - dd.windowWidth / 2;
+			// double max = dd.windowCenter + dd.windowWidth / 2;
+			// Calibration cal = imp.getCalibration();
+			// min = cal.getRawValue(min);
+			// max = cal.getRawValue(max);
+			// ip.setMinAndMax(min, max);
+			// if (IJ.debugMode) {
+			// IJ.log("window: " + min + "-" + max);
+			// }
+			// }
+
+			if (imp.getStackSize() > 1) {
+				setStack(fileName, imp.getStack());
+			} else {
+				setProcessor(fileName, imp.getProcessor());
+			}
+
+			setCalibration(imp.getCalibration());
+
+			setProperty("Info", ad.header);// getHeader());
+
+			setFileInfo(fi); // needed for revert
+
+			if (arg.equals("")) {
+				show();
+			}
+
+		} else { // if (showErrors)
+			Log.error("ADACDecoder", "Unable to decode ADAC header.");
+		}
+
+		IJ.showStatus("");
+
+	}
 }
