@@ -1,6 +1,5 @@
 package ADAC;
 
-import ij.IJ;
 import ij.io.FileInfo;
 
 import java.io.BufferedInputStream;
