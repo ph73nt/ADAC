@@ -110,7 +110,9 @@ public class ADACDecoder {
 		// ////////////////////////////////////////////////////////////
 
 		// First 10 bytes reserved for preamble
-		hdr = getKeyString(6) + "\n";
+		byte[] sixBytes = new byte[6];
+		keyBuffer.get(sixBytes, 0, 6);
+		hdr = new String(sixBytes) + "\n"; 
 		Log.log(hdr); // says adac01
 
 		try {
@@ -220,7 +222,7 @@ public class ADACDecoder {
 					switch (keynum) {
 
 					case 46:
-						// Time oper frame
+						// Time per frame
 						frameTime = ((double) m_Int) / 1000d;
 						break;
 
@@ -281,8 +283,7 @@ public class ADACDecoder {
 
 				byte[] someBytes;
 				// Check we've got readable ASCII chars - 32 is the first
-				// (space)
-				// and 126 is the last (~);
+				// (space) and 126 is the last (~);
 				int i = 0;
 				do {
 					int index = indxExtra + extras[j].length() + i;
@@ -315,8 +316,7 @@ public class ADACDecoder {
 				switch (j) {
 				case INDX_CALB:
 					// Calibration factor is size (mm) of a pixel if the image
-					// were
-					// scaled to 1024 pixels wide or high
+					// were scaled to 1024 pixels wide or high
 					double calibF;
 					try {
 						calibF = Float.parseFloat(message);
@@ -359,15 +359,6 @@ public class ADACDecoder {
 		short fieldOffset = keyBuffer.getShort();
 
 		return new ADACKey(num, datTyp, fieldOffset);
-
-	}
-
-	private String getKeyString(int length) throws IOException {
-
-		byte[] mBytes = new byte[length];
-		keyBuffer.get(mBytes, 0, length);
-		String string = new String(mBytes);
-		return string.trim();
 
 	}
 
