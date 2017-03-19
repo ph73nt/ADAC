@@ -33,6 +33,8 @@ public class Import_ADAC_image extends ImagePlus implements PlugIn {
 
 	public void run(String arg) {
 
+		IJ.showStatus("Opening ADAC image file...");
+		
 		OpenDialog od = new OpenDialog("Open ADAC image file...", arg);
 		String directory = od.getDirectory();
 		String fileName = od.getFileName();
