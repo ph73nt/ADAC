@@ -1,0 +1,41 @@
+<project name="ADAC" default="" basedir=".">
+    <description>
+        ADAC build file
+    </description>
+  <property name="src" location="src" />
+  <property name="build" location="bin" />
+  <property name="dist"  location="dist" />
+ 
+	 <property name="pluginsDir"  location="$basedir/../../ImageJ/plugins/ADAC/" />
+ 
+  <property name="user.name" value="Neil Thomson" />
+  <target name="main" description="Copying">
+  	<echo> Copying bin files </echo>
+  	<copy file="target/classes/ADAC/ADACDecoder.class" toDir="${pluginsDir}"></copy>
+  	<copy file="target/classes/ADAC/ADACDictionary.class" toDir="${pluginsDir}"></copy>
+  	<copy file="target/classes/ADAC/ADACEncoder.class" toDir="${pluginsDir}"></copy>
+  	<copy file="target/classes/ADAC/ADACKey.class" toDir="${pluginsDir}"></copy>
+  	<copy file="target/classes/ADAC/Export_ADAC_image.class" toDir="${pluginsDir}"></copy>
+  	<copy file="target/classes/ADAC/Import_ADAC_image.class" toDir="${pluginsDir}"></copy>
+  	<copy file="target/classes/ADAC/Log.class" toDir="${pluginsDir}"></copy>
+  	<!--copy file="target/classes/ADAC/keyNumGroup.class" toDir="${pluginsDir}"></copy-->
+  	<!--copy file="target/classes/ADAC/keyNums.class" toDir="${pluginsDir}"></copy-->
+  </target>
+	
+<!-- target name="main" depends="compress" description="Main target">
+	<echo>
+		Building the .jar file.
+	</echo>
+</target -->
+ <target name="compress" depends="" description="generate the distribution">
+ 	<!--jar jarfile="ADAC_Utils.jar">
+ 		<fileset dir="." includes="plugins.config" />
+		<fileset dir="${build}" includes="**/*.*" />
+ 		<manifest>
+ 		 	 	      <attribute name="Built-By" value="${user.name}"/>
+ 		</manifest>
+ 	</jar>
+    <copy file="ADAC_Utils.jar" toDir="${pluginsDir}" /-->
+  </target>
+	
+</project>
