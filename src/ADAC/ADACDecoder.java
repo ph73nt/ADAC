@@ -87,10 +87,10 @@ public class ADACDecoder {
 		// Parse the header
 		header = getHeader();
 
-		// Set some default values for testing
+		// Set values for image display
 		fi.width = xdim;
 		fi.height = ydim;
-		fi = setFrames(fi);
+		fi.nImages = noSets*zdim;
 		fi.pixelDepth = slice_t;
 		fi.fileType = bitDepth;
 		fi.frameInterval = frameTime;
@@ -339,15 +339,6 @@ public class ADACDecoder {
 			}
 		}
 
-		return fi;
-	}
-
-	private FileInfo setFrames(FileInfo fi) {
-		if (AD_Type.matches("GE")) { // Gated SPECT doesn't yet work!
-			fi.nImages = noSets * intervals;
-		} else {
-			fi.nImages = zdim;
-		}
 		return fi;
 	}
 

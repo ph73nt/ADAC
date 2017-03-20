@@ -34,7 +34,7 @@ public class Import_ADAC_image extends ImagePlus implements PlugIn {
 	public void run(String arg) {
 
 		IJ.showStatus("Opening ADAC image file...");
-		
+
 		OpenDialog od = new OpenDialog("Open ADAC image file...", arg);
 		String directory = od.getDirectory();
 		String fileName = od.getFileName();
@@ -87,7 +87,14 @@ public class Import_ADAC_image extends ImagePlus implements PlugIn {
 			// }
 
 			if (imp.getStackSize() > 1) {
+
+				if (ad.noSets > 1 && ad.zdim > 1) {
+					setDimensions(1, ad.zdim, ad.noSets);
+					setOpenAsHyperStack(true);
+				}
+
 				setStack(fileName, imp.getStack());
+
 			} else {
 				setProcessor(fileName, imp.getProcessor());
 			}
