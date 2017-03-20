@@ -61,31 +61,7 @@ public class Import_ADAC_image extends ImagePlus implements PlugIn {
 
 			FileOpener fo = new FileOpener(fi);
 			ImagePlus imp = fo.open(false);
-			// ImageProcessor ip = imp.getProcessor();
-
-			/*
-			 * if (fi.fileType == FileInfo.GRAY16_SIGNED) { if
-			 * (ad.rescaleIntercept != 0.0 && dd.rescaleSlope == 1.0) {
-			 * ip.add(ad.rescaleIntercept); } } else if (dd.rescaleIntercept !=
-			 * 0.0 && (dd.rescaleSlope == 1.0 || fi.fileType == FileInfo.GRAY8))
-			 * { double[] coeff = new double[2]; coeff[0] = dd.rescaleIntercept;
-			 * coeff[1] = dd.rescaleSlope;
-			 * imp.getCalibration().setFunction(Calibration.STRAIGHT_LINE,
-			 * coeff, "gray value"); }
-			 */
-
-			// if (dd.windowWidth > 0.0) {
-			// double min = dd.windowCenter - dd.windowWidth / 2;
-			// double max = dd.windowCenter + dd.windowWidth / 2;
-			// Calibration cal = imp.getCalibration();
-			// min = cal.getRawValue(min);
-			// max = cal.getRawValue(max);
-			// ip.setMinAndMax(min, max);
-			// if (IJ.debugMode) {
-			// IJ.log("window: " + min + "-" + max);
-			// }
-			// }
-
+			
 			if (imp.getStackSize() > 1) {
 
 				if (ad.noSets > 1 && ad.zdim > 1) {
