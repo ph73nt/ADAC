@@ -18,10 +18,14 @@ public class ADACDecoder {
 	private BufferedInputStream inputStream;
 	private BufferedInputStream f;
 	private byte[] valHeaders;
+	private boolean isGated = false;
 
 	public String header, AD_Type, AD_ex_objs;
 	public String[] values = new String[ADACDictionary.NUM_KEYS + 1];
-	public int xdim, ydim, zdim, bitDepth, intervals, noSets;
+	public int xdim, ydim, bitDepth;
+	public int zdim = 1;
+	public int slices = 1;
+	public int intervals = 1;
 	public double slice_t, frameTime;
 
 	public ADACDecoder(String directory, String fileName) {
@@ -90,11 +94,35 @@ public class ADACDecoder {
 		// Set values for image display
 		fi.width = xdim;
 		fi.height = ydim;
-		fi.nImages = noSets*zdim;
 		fi.pixelDepth = slice_t;
 		fi.fileType = bitDepth;
 		fi.frameInterval = frameTime;
-		fi.offset = ADACDictionary.IM_OFFSET;
+
+		// Gated or non-gated
+		if (isGated) {
+			// The GE data type represents gated objects...
+			// must have one of the following objects:
+			// - Gated SPECT projections
+			// - Gated reconstruction
+			// - Gated planar
+			if (slices > 0) {
+				// Must have a gated reconstruction, which has some number
+				// (usually 16) intervals per reconstructed slice
+				fi.nImages = zdim * slices * intervals;
+				fi.offset = ADACDictionary.IM_OFFSET;
+			} else {
+				// Gated SPECT data set, which has some number (usually 16)
+				// intervals per azimuthal projection
+				fi.nImages = zdim * intervals;
+				fi.offset = ADACDictionary.GATED_SPECT_OFFSET;
+			}
+
+		} else {
+			// Non gated data - simplest case
+			fi.nImages = zdim;
+			fi.offset = ADACDictionary.IM_OFFSET;
+		}
+
 		fi = parseADACExtras(fi);
 
 		return fi;
@@ -112,7 +140,7 @@ public class ADACDecoder {
 		// First 10 bytes reserved for preamble
 		byte[] sixBytes = new byte[6];
 		keyBuffer.get(sixBytes, 0, 6);
-		hdr = new String(sixBytes) + "\n"; 
+		hdr = new String(sixBytes) + "\n";
 		Log.log(hdr); // says adac01
 
 		try {
@@ -154,6 +182,14 @@ public class ADACDecoder {
 						break;
 					case 17:
 						AD_Type = string;
+						if (AD_Type != null && AD_Type.equals("GE")) {
+							// The GE data type represents gated objects...
+							// must have one of the following objects:
+							// - Gated SPECT projections
+							// - Gated reconstruction
+							// - Gated planar
+							isGated = true;
+						}
 						break;
 					}
 
@@ -201,13 +237,13 @@ public class ADACDecoder {
 						break;
 
 					case 86:
-						noSets = shortValue;
-						Log.log("" + noSets);
+						intervals = shortValue;
+						Log.log("" + intervals);
 						break;
 
 					case 61:
-						intervals = shortValue;
-						Log.log("" + intervals);
+						slices = shortValue;
+						Log.log("" + slices);
 						break;
 
 					}
@@ -351,6 +387,10 @@ public class ADACDecoder {
 
 		return new ADACKey(num, datTyp, fieldOffset);
 
+	}
+	
+	public boolean isGated(){
+		return isGated;
 	}
 
 }

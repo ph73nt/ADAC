@@ -23,7 +23,7 @@ public class ADACDictionary {
 	 * beats held here for 106496 bytes. This takes up exactly 26 frames of
 	 * 64x64x8.
 	 */
-	public static final int GATED_OFFSET = 108544;
+	public static final int GATED_SPECT_OFFSET = 108544;
 	/**
 	 * The maximum number of keys stored in an ADAC image object
 	 */

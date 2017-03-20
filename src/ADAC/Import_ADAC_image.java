@@ -61,11 +61,19 @@ public class Import_ADAC_image extends ImagePlus implements PlugIn {
 
 			FileOpener fo = new FileOpener(fi);
 			ImagePlus imp = fo.open(false);
-			
+
 			if (imp.getStackSize() > 1) {
 
-				if (ad.noSets > 1 && ad.zdim > 1) {
-					setDimensions(1, ad.zdim, ad.noSets);
+				// Gated image set
+				if (ad.isGated()) {
+
+					// Is it a reconstruction?
+					if (ad.slices > 0 && ad.intervals > 1) {
+						// Yes it is a reconstruction
+						setDimensions(1, ad.slices, ad.intervals);
+					} else {
+						setDimensions(1, ad.zdim, ad.intervals);
+					}
 					setOpenAsHyperStack(true);
 				}
 
