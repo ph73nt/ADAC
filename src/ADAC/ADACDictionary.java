@@ -1,19 +1,66 @@
 package ADAC;
 
 /**
- *
+ * Dictionary for the ADAC image object, including offsets and key-value pair
+ * information.
+ * 
  * @author NTHOMSON
  */
 public class ADACDictionary {
 
+	/**
+	 * Offset to the information ADAC refers to as "labels". One would call
+	 * these the values of key-value pairs.
+	 */
 	public static final int LABEL_OFFSET = 540;
+	/**
+	 * The offset in bytes to the image data.
+	 */
 	public static final int IM_OFFSET = 2048;
+	/**
+	 * The maximum number of keys stored in an ADAC image object
+	 */
 	public static final int NUM_KEYS = 114;
-	public static final int BYTE = 0, SHORT = 1, INT = 2;
-	public static final int FLOAT = 3, VAR = 4;
-	public String[] descriptions;
-	public int[] type, valLength;
+	/**
+	 * The byte data type of a key value pair.
+	 */
+	public static final int BYTE = 0;
+	/**
+	 * The short data type of a key value pair.
+	 */
+	public static final int SHORT = 1;
+	/**
+	 * The integer data type of a key value pair.
+	 */
+	public static final int INT = 2;
+	/**
+	 * The float data type of a key value pair.
+	 */
+	public static final int FLOAT = 3;
+	/**
+	 * The miscellaneous data type of a key value pair.
+	 */
+	public static final int VAR = 4;
+	/**
+	 * Descriptions of ADAC key-value pairs that appear in the IJ image info
+	 */
+	public final String[] descriptions;
+	/**
+	 * Key-value pair data types
+	 */
+	public final int[] type;
+	/**
+	 * Each value of a key-value pair is restricted to a set length and
+	 * null-padded if necessary. This often leads to truncation of long fields
+	 * such as patient name, which can be found in non-truncated format in the
+	 * ADAC Extra Objects field.
+	 */
+	public final int[] valLength;
 
+	/**
+	 * Populates the ADAC key-value pairs information. There are arrays for KVP
+	 * descriptions, data type and value lengths.
+	 */
 	public ADACDictionary() {
 
 		int x;
@@ -257,12 +304,12 @@ public class ADACDictionary {
 		valLength[x] = 1;
 
 		x = 37;
-		descriptions[x] = "Spatial resolution";
+		descriptions[x] = "Spatial resolution (mm)";
 		type[x] = FLOAT; // in mm
 		valLength[x] = 4;
 
 		x = 38;
-		descriptions[x] = "Slice thickness";
+		descriptions[x] = "Slice thickness (mm)";
 		type[x] = FLOAT; // in mm
 		valLength[x] = 4;
 
@@ -321,12 +368,12 @@ public class ADACDictionary {
 		valLength[x] = 4;
 
 		x = 46;
-		descriptions[x] = "Frame time";
+		descriptions[x] = "Frame time (ms)";
 		type[x] = INT; // in ms
 		valLength[x] = 4;
 
 		x = 47;
-		descriptions[x] = "Acquisition time";
+		descriptions[x] = "Acquisition time (ms)";
 		type[x] = INT; // in ms
 		valLength[x] = 4;
 
