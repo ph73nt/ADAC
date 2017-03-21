@@ -104,14 +104,15 @@ public class ADACDecoder {
 			// must have one of the following objects:
 			// - Gated SPECT projections
 			// - Gated reconstruction
-			// - Gated planar
+			// - Gated planar (although all examples of these I have seen just
+			// use the dynamic planar (DP) data type)
 			if (slices > 0) {
 				// Must have a gated reconstruction, which has some number
 				// (usually 16) intervals per reconstructed slice
 				fi.nImages = zdim * slices * intervals;
 				fi.offset = ADACDictionary.IM_OFFSET;
 			} else {
-				// Gated SPECT data set, which has some number (usually 16)
+				// Gated SPECT projections, which has some number (usually 16)
 				// intervals per azimuthal projection
 				fi.nImages = zdim * intervals;
 				fi.offset = ADACDictionary.GATED_SPECT_OFFSET;
@@ -388,8 +389,8 @@ public class ADACDecoder {
 		return new ADACKey(num, datTyp, fieldOffset);
 
 	}
-	
-	public boolean isGated(){
+
+	public boolean isGated() {
 		return isGated;
 	}
 
