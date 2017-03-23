@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ADACDecoder {
 
@@ -18,8 +20,13 @@ public class ADACDecoder {
 	private BufferedInputStream inputStream;
 	private BufferedInputStream f;
 	private byte[] valHeaders;
-	private boolean isGated = false;
-
+	
+	private final Map<Short, String> stringsMap;
+	private final Map<Short, Short> shortsMap;
+	private final Map<Short, Integer> intsMap;
+	private final Map<Short, Float> floatsMap;
+	private final Map<Short, Integer> bitDepthMap;
+	
 	public String header, AD_Type, AD_ex_objs;
 	public String[] values = new String[ADACDictionary.NUM_KEYS + 1];
 	public int xdim, ydim, bitDepth;
@@ -27,10 +34,27 @@ public class ADACDecoder {
 	public int slices = 1;
 	public int intervals = 1;
 	public double slice_t, frameTime;
+	private FileInfo fi;
 
 	public ADACDecoder(String directory, String fileName) {
+		
 		this.directory = directory;
 		this.fileName = fileName;
+		
+		stringsMap = new HashMap<Short, String>();
+		shortsMap = new HashMap<Short, Short>();
+		intsMap = new HashMap<Short, Integer>();
+		floatsMap = new HashMap<Short, Float>();
+		
+		fi = new FileInfo();
+		
+		// Bit depth and set the default bit depth
+		bitDepthMap = new HashMap<Short, Integer>();
+		bitDepthMap.put(null, FileInfo.GRAY16_SIGNED);
+		bitDepthMap.put((short)8, FileInfo.GRAY8);
+		bitDepthMap.put((short)16, FileInfo.GRAY16_SIGNED);
+		bitDepthMap.put((short)32, FileInfo.GRAY32_FLOAT);
+
 	}
 
 	public BufferedInputStream getInputStream() {
@@ -43,7 +67,6 @@ public class ADACDecoder {
 
 	public FileInfo getFileInfo() throws IOException {
 
-		FileInfo fi = new FileInfo();
 		fi.fileFormat = FileInfo.RAW;
 		fi.fileName = fileName;
 		fi.intelByteOrder = false;
@@ -67,8 +90,7 @@ public class ADACDecoder {
 		if (inputStream != null) {
 			f = inputStream;
 		} else {
-			f = new BufferedInputStream(new FileInputStream(directory
-					+ fileName));
+			f = new BufferedInputStream(new FileInputStream(directory + fileName));
 		}
 
 		Log.log("\nADACDecoder: decoding " + fileName);
@@ -77,8 +99,7 @@ public class ADACDecoder {
 		byte[] bytHeader = new byte[ADACDictionary.LABEL_OFFSET];
 		valHeaders = new byte[ADACDictionary.IM_OFFSET];
 		f.read(bytHeader, 0, bytHeader.length);
-		f.read(valHeaders, ADACDictionary.LABEL_OFFSET, valHeaders.length
-				- ADACDictionary.LABEL_OFFSET);
+		f.read(valHeaders, ADACDictionary.LABEL_OFFSET, valHeaders.length - ADACDictionary.LABEL_OFFSET);
 
 		if (fi.intelByteOrder) {
 			keyBuffer.order(ByteOrder.LITTLE_ENDIAN);
@@ -90,40 +111,7 @@ public class ADACDecoder {
 
 		// Parse the header
 		header = getHeader();
-
-		// Set values for image display
-		fi.width = xdim;
-		fi.height = ydim;
-		fi.pixelDepth = slice_t;
-		fi.fileType = bitDepth;
-		fi.frameInterval = frameTime;
-
-		// Gated or non-gated
-		if (isGated) {
-			// The GE data type represents gated objects...
-			// must have one of the following objects:
-			// - Gated SPECT projections
-			// - Gated reconstruction
-			// - Gated planar (although all examples of these I have seen just
-			// use the dynamic planar (DP) data type)
-			if (slices > 0) {
-				// Must have a gated reconstruction, which has some number
-				// (usually 16) intervals per reconstructed slice
-				fi.nImages = zdim * slices * intervals;
-				fi.offset = ADACDictionary.IM_OFFSET;
-			} else {
-				// Gated SPECT projections, which has some number (usually 16)
-				// intervals per azimuthal projection
-				fi.nImages = zdim * intervals;
-				fi.offset = ADACDictionary.GATED_SPECT_OFFSET;
-			}
-
-		} else {
-			// Non gated data - simplest case
-			fi.nImages = zdim;
-			fi.offset = ADACDictionary.IM_OFFSET;
-		}
-
+		setValues();
 		fi = parseADACExtras(fi);
 
 		return fi;
@@ -160,8 +148,9 @@ public class ADACDecoder {
 				ADACKey key = getKeys();
 				short fieldOffset = key.getFieldOffset();
 				short keynum = key.getKeyNum();
+				byte keyType = key.getDataType();
 
-				switch (key.getDataType()) {
+				switch (keyType) {
 
 				case ADACDictionary.BYTE:
 
@@ -173,134 +162,95 @@ public class ADACDecoder {
 					valBuffer.position(fieldOffset);
 					valBuffer.get(bytes, 0, len);
 					String string = new String(bytes);
-					values[keynum] = string;
 
-					switch (keynum) {
-					case ADACDictionary.PROGRAM_SPECIFIC:
-						// ADAC "extras"
-						AD_ex_objs = string;
-						values[keynum] = AD_ex_objs;
-						break;
-					case ADACDictionary.DATA_TYPE:
-						AD_Type = string;
-						if (AD_Type != null && AD_Type.equals("GE")) {
-							// The GE data type represents gated objects...
-							// must have one of the following objects:
-							// - Gated SPECT projections
-							// - Gated reconstruction
-							// - Gated planar
-							isGated = true;
-						}
-						break;
-					}
-
+					stringsMap.put(keynum, string);
+					Log.log(keynum + ", " + keyType + ", " + fieldOffset + ", " + string);
 					break;
 
 				case ADACDictionary.SHORT:
 
 					short shortValue = valBuffer.getShort(fieldOffset);
-
-					switch (keynum) {
-
-					case ADACDictionary.X_DIMENSIONS: // X-dimension
-						xdim = shortValue;
-						break;
-
-					case ADACDictionary.Y_DIMENSIONS: // Y-dimension
-						ydim = shortValue;
-						break;
-
-					case ADACDictionary.Z_DIMENSIONS: // Z dimension
-						zdim = shortValue;
-						break;
-
-					case ADACDictionary.PIXEL_BIT_DEPTH: // Pixel depth
-
-						switch (shortValue) {
-
-						case 8:
-							bitDepth = FileInfo.GRAY8;
-							break;
-
-						case 16:
-							bitDepth = FileInfo.GRAY16_SIGNED;
-							break;
-
-						case 32:
-							bitDepth = FileInfo.GRAY32_FLOAT;
-							break;
-
-						default:
-							bitDepth = FileInfo.GRAY16_UNSIGNED;
-						}
-						;
-
-						break;
-
-					case ADACDictionary.NUMBER_OF_IMAGE_SETS:
-						intervals = shortValue;
-						Log.log("" + intervals);
-						break;
-
-					case ADACDictionary.RECONSTRUCTED_SLICES:
-						slices = shortValue;
-						Log.log("" + slices);
-						break;
-
-					}
-
-					values[keynum] = "" + shortValue;
+					shortsMap.put(keynum, shortValue);
+					Log.log(keynum + ", " + keyType + ", " + fieldOffset + ", " + shortValue);
+					
 					break;
-
+					
 				case ADACDictionary.INT:
 
 					int m_Int = valBuffer.getInt(fieldOffset);
-
-					switch (keynum) {
-
-					case ADACDictionary.FRAME_TIME:
-						// Time per frame
-						frameTime = ((double) m_Int) / 1000d;
-						break;
-
-					}
-					values[keynum] = "" + m_Int;
+					intsMap.put(keynum, m_Int);
+					Log.log(keynum + ", " + keyType + ", " + fieldOffset + ", " + m_Int);
+					
 					break;
 
 				case ADACDictionary.FLOAT:
 
 					float floatValue = valBuffer.getFloat(fieldOffset);
-
-					switch (keynum) {
-
-					case ADACDictionary.SLICE_THICKNESS:
-						slice_t = floatValue;
-
-					}
-
-					values[keynum] = "" + floatValue;
+					floatsMap.put(keynum, floatValue);
+					Log.log(keynum + ", " + keyType + ", " + fieldOffset + ", " + floatValue);
+					
 					break;
 
 				}
 
-				hdr += dict.descriptions[keynum] + " = " + values[keynum]
-						+ "\n";
-
-				Log.log(keynum + ", " + key.getDataType() + ", " + fieldOffset
-						+ ", " + values[keynum]);
+				hdr += dict.descriptions[keynum] + " = " + values[keynum] + "\n";
 
 			}
-
-			Log.log("" + values.length);
 
 			return hdr;
 
 		} catch (IOException e) {
-			Log.error("ADAC Decoder",
-					"Failed to retrieve ADAC image file header. "
-							+ "Is this an ADAC image file?");
+			Log.error("ADAC Decoder", "Failed to retrieve ADAC image file header. " + "Is this an ADAC image file?");
 			return null;
 		}
+	}
+
+	private void setValues() {
+
+		// Strings
+		AD_ex_objs = stringsMap.get(ADACDictionary.PROGRAM_SPECIFIC);
+		AD_Type = stringsMap.get(ADACDictionary.DATA_TYPE);
+
+		// Shorts
+		fi.width = shortsMap.get(ADACDictionary.X_DIMENSIONS);
+		fi.height = shortsMap.get(ADACDictionary.Y_DIMENSIONS);
+		zdim = shortsMap.get(ADACDictionary.Z_DIMENSIONS);
+		slices = shortsMap.get(ADACDictionary.RECONSTRUCTED_SLICES);
+		intervals = shortsMap.get(ADACDictionary.NUMBER_OF_IMAGE_SETS);
+		
+		short adBitDepth = shortsMap.get(ADACDictionary.PIXEL_BIT_DEPTH);
+		fi.fileType = bitDepthMap.get(adBitDepth);
+		
+		// Ints
+		// Convert from milliseconds to seconds
+		fi.frameInterval = intsMap.get(ADACDictionary.FRAME_TIME) / 1000;
+		
+		// Gated or non-gated
+		if (isGated()) {
+			// The GE data type represents gated objects...
+			// must have one of the following objects:
+			// - Gated SPECT projections
+			// - Gated reconstruction
+			// - Gated planar (although all examples of these I have seen just
+			// use the dynamic planar (DP) data type)
+			if (slices > 0) {
+				// Must have a gated reconstruction, which has some number
+				// (usually 16) intervals per reconstructed slice
+				fi.nImages = zdim * slices * intervals;
+				fi.offset = ADACDictionary.IM_OFFSET;
+			} else {
+				// Gated SPECT projections, which has some number (usually 16)
+				// intervals per azimuthal projection
+				fi.nImages = zdim * intervals;
+				fi.offset = ADACDictionary.GATED_SPECT_OFFSET;
+			}
+
+		} else {
+			// Non gated data - simplest case
+			fi.nImages = zdim;
+			fi.offset = ADACDictionary.IM_OFFSET;
+		}
+
 	}
 
 	private FileInfo parseADACExtras(FileInfo fi) {
@@ -391,7 +341,22 @@ public class ADACDecoder {
 	}
 
 	public boolean isGated() {
-		return isGated;
+
+		if (AD_Type == null) {
+			
+			return false;
+		
+		} else if (AD_Type.equals("GE") || AD_Type.equals("GP")) {
+
+			// GE - Gated ECT
+			// GP - Gated planar (although these usually just get given DP)
+			return true;
+
+		} else {
+		
+			return false;
+		}
+
 	}
 
 }
