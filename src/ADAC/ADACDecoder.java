@@ -176,12 +176,12 @@ public class ADACDecoder {
 					values[keynum] = string;
 
 					switch (keynum) {
-					case 114:
+					case ADACDictionary.PROGRAM_SPECIFIC:
 						// ADAC "extras"
 						AD_ex_objs = string;
 						values[keynum] = AD_ex_objs;
 						break;
-					case 17:
+					case ADACDictionary.DATA_TYPE:
 						AD_Type = string;
 						if (AD_Type != null && AD_Type.equals("GE")) {
 							// The GE data type represents gated objects...
@@ -202,19 +202,19 @@ public class ADACDecoder {
 
 					switch (keynum) {
 
-					case 39: // X-dimension
+					case ADACDictionary.X_DIMENSIONS: // X-dimension
 						xdim = shortValue;
 						break;
 
-					case 40: // Y-dimension
+					case ADACDictionary.Y_DIMENSIONS: // Y-dimension
 						ydim = shortValue;
 						break;
 
-					case 41: // Z dimension
+					case ADACDictionary.Z_DIMENSIONS: // Z dimension
 						zdim = shortValue;
 						break;
 
-					case 42: // Pixel depth
+					case ADACDictionary.PIXEL_BIT_DEPTH: // Pixel depth
 
 						switch (shortValue) {
 
@@ -237,12 +237,12 @@ public class ADACDecoder {
 
 						break;
 
-					case 86:
+					case ADACDictionary.NUMBER_OF_IMAGE_SETS:
 						intervals = shortValue;
 						Log.log("" + intervals);
 						break;
 
-					case 61:
+					case ADACDictionary.RECONSTRUCTED_SLICES:
 						slices = shortValue;
 						Log.log("" + slices);
 						break;
@@ -258,7 +258,7 @@ public class ADACDecoder {
 
 					switch (keynum) {
 
-					case 46:
+					case ADACDictionary.FRAME_TIME:
 						// Time per frame
 						frameTime = ((double) m_Int) / 1000d;
 						break;
@@ -273,7 +273,7 @@ public class ADACDecoder {
 
 					switch (keynum) {
 
-					case 38: // Slice thickness
+					case ADACDictionary.SLICE_THICKNESS:
 						slice_t = floatValue;
 
 					}
