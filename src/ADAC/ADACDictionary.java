@@ -64,6 +64,9 @@ public class ADACDictionary {
 	 */
 	public final int[] valLength;
 
+	// //////////////////////////////////////////////////////////
+	// Patient demographics
+	// //////////////////////////////////////////////////////////
 	public static final int PATIENT_NAME = 1;
 	public static final int PATIENT_ID = 2;
 	public static final int PATIENT_SEX = 3;
@@ -72,6 +75,10 @@ public class ADACDictionary {
 	public static final int PATIENT_WEIGHT = 6;
 	public static final int UNIQUE_PATIENT_KEY = 76;	
 	public static final int DATE_OF_BIRTH = 109;
+
+	// //////////////////////////////////////////////////////////
+	// Exam information
+	// //////////////////////////////////////////////////////////
 	public static final int ACQUISITION_DATE = 7;
 	public static final int DOSE_ADMIN_TIME = 8;
 	public static final int UNIQUE_EXAM_KEY = 9;
@@ -83,10 +90,18 @@ public class ADACDictionary {
 	public static final int NRML_CRV_FILE_NAME = 82;
 	public static final int HISTOG_CRV_FILE_NAME = 15;
 	public static final int ACQUISITION_START_TIME = 16;
+
+	// //////////////////////////////////////////////////////////
+	// Relational information
+	// //////////////////////////////////////////////////////////
 	public static final int DATA_TYPE = 17;
 	public static final int IMAGE_VIEW_ID = 18;
 	public static final int UNIQUE_OBJECT_KEY = 83;
 	public static final int ASSOCIATED_PARENT_FILE = 75;
+
+	// //////////////////////////////////////////////////////////
+	// Acquisition information - general
+	// //////////////////////////////////////////////////////////
 	public static final int IMAGING_DEVICE_NAME = 19;
 	public static final int DEVICE_SERIAL_NUMBER = 20;
 	public static final int COLLIMATOR_USED = 21;
@@ -117,6 +132,10 @@ public class ADACDictionary {
 	public static final int UNIFORMITY_CORRECTION = 43;
 	public static final int ZOOM = 44;
 	public static final int VFR_STRUCT = 111;
+
+	// //////////////////////////////////////////////////////////
+	// Acquisition information - multiframe specific
+	// //////////////////////////////////////////////////////////
 	public static final int TOTAL_COUNTS_IN_FRAME = 45;
 	public static final int FRAME_TIME = 46;
 	public static final int ACQUISITION_TIME = 47;
@@ -124,6 +143,10 @@ public class ADACDictionary {
 	public static final int MAX_VALUE_IN_SET = 48;
 	public static final int MIN_VALUE_IN_SET = 49;
 	public static final int SCALE_FACTOR = 87;
+
+	// //////////////////////////////////////////////////////////
+	// Acquisition information - gated specific
+	// //////////////////////////////////////////////////////////
 	public static final int R_R_INTERVAL_TIME = 50;
 	public static final int R_R_LOW_TOLERANCE_TIME = 112;
 	public static final int R_R_HIGH_TOLERANCE_TIME = 113;
@@ -133,15 +156,27 @@ public class ADACDictionary {
 	public static final int END_DIASTOLIC_FRAME = 54;
 	public static final int END_SYSTOLIC_FRAME = 55;
 	public static final int EJECTION_FRACTION = 56;
+
+	// //////////////////////////////////////////////////////////
+	// Acquisition information - SPECT specific
+	// //////////////////////////////////////////////////////////
 	public static final int STARTING_ANGLE = 57;
 	public static final int DEGREES_OF_ROTATION = 58;
 	public static final int DIRECTION_OF_ROTATION = 59;
 	public static final int REORIENTATION_TYPE = 60;
 	public static final int RECONSTRUCTED_SLICES = 61;
+
+	// //////////////////////////////////////////////////////////
+	// Image display information
+	// //////////////////////////////////////////////////////////
 	public static final int UPPER_WINDOW_GRAY_LEVEL = 62;
 	public static final int LOWER_LEVEL_GRAY_LEVEL = 63;
 	public static final int ASSOCIATED_COLOUR_MAP = 64;
 	public static final int CUSTOMISED_COLOUR_MAP = 65;
+
+	// //////////////////////////////////////////////////////////
+	// Image processing information
+	// //////////////////////////////////////////////////////////
 	public static final int MANIPULATED_IMAGE = 66;
 	public static final int AXIS_OF_ROTATION_CORR = 67;
 	public static final int REORIENTATION_AZIMUTH = 68;
@@ -151,6 +186,10 @@ public class ADACDictionary {
 	public static final int CUTOFF_FREQUENCY = 72;
 	public static final int RECONSTRUCTION_TYPE = 73;
 	public static final int ATTENUATION_COEFFICIENT = 74;
+	
+	// //////////////////////////////////////////////////////////
+	// Program specific and "extra" object information
+	// //////////////////////////////////////////////////////////
 	public static final int PROGRAM_SPECIFIC = 114;	
 	
 	/**
@@ -159,7 +198,6 @@ public class ADACDictionary {
 	 */
 	public ADACDictionary() {
 
-		int x;
 		descriptions = new String[NUM_KEYS + 1];
 		type = new int[NUM_KEYS + 1];
 		valLength = new int[NUM_KEYS + 1];
@@ -175,9 +213,23 @@ public class ADACDictionary {
 		type[0] = 0;
 		valLength[0] = 0;
 
-		// //////////////////////////////////////////////////////////
-		// Patient demographics
-		// //////////////////////////////////////////////////////////
+		// Populate the arrays in easy to read chunks
+		demogs();
+		examInfo();
+		relational();
+		generalAcquisitionInfo();
+		multiframeInfo();
+		gatedInfo();
+		spectInfo();
+		imageDisplay();
+		imageProcessing();
+		programSpecificInfo();
+	}
+	
+	/**
+	 * Populate patient demographics
+	 */
+	private void demogs(){
 
 		descriptions[PATIENT_NAME] = "Patient name";
 		type[PATIENT_NAME] = BYTE;
@@ -211,439 +263,377 @@ public class ADACDictionary {
 		type[DATE_OF_BIRTH] = BYTE;
 		valLength[DATE_OF_BIRTH] = 8; // YYYYMMDD
 
-		// //////////////////////////////////////////////////////////
-		// Exam information
-		// //////////////////////////////////////////////////////////
-		x = 7;
-		descriptions[x] = "Acquisition date";
-		type[x] = BYTE;
-		valLength[x] = 8; // YYYYMMDD
-
-		x = 8;
-		descriptions[x] = "Dose admin. time";
-		type[x] = BYTE;
-		valLength[x] = 8; // HH:MM:SS
-
-		x = 9;
-		descriptions[x] = "Unique exam key";
-		type[x] = BYTE;
-		valLength[x] = 8;
-
-		x = 10;
-		descriptions[x] = "Exam procedure";
-		type[x] = BYTE;
-		valLength[x] = 36;
-
-		x = 11;
-		descriptions[x] = "Reffering physician";
-		type[x] = BYTE;
-		valLength[x] = 20;
-
-		x = 12;
-		descriptions[x] = "Attending physician";
-		type[x] = BYTE;
-		valLength[x] = 20;
-
-		x = 13;
-		descriptions[x] = "Imaging modality";
-		type[x] = BYTE;
-		valLength[x] = 2;
-
-		x = 14;
-		descriptions[x] = "Institution name";
-		type[x] = BYTE;
-		valLength[x] = 20;
-
-		x = 82;
-		descriptions[x] = "Nrml crv file name";
-		type[x] = BYTE;
-		valLength[x] = 10;
-
-		x = 15;
-		descriptions[x] = "Histog. crv file name";
-		type[x] = BYTE;
-		valLength[x] = 20;
-
-		x = 16;
-		descriptions[x] = "Acquisition start time";
-		type[x] = BYTE;
-		valLength[x] = 10;
-
-		// //////////////////////////////////////////////////////////
-		// Relational information
-		// //////////////////////////////////////////////////////////
-		x = 17;
-		descriptions[x] = "Data type";
-		type[x] = BYTE;
-		valLength[x] = 2;
-
-		x = 18;
-		descriptions[x] = "Image view ID";
-		type[x] = BYTE;
-		valLength[x] = 16;
-
-		x = 83;
-		descriptions[x] = "Unique object key";
-		type[x] = BYTE;
-		valLength[x] = 3;
-
-		x = 75;
-		descriptions[x] = "Associated parent file";
-		type[x] = BYTE;
-		valLength[x] = 20;
-
-		// //////////////////////////////////////////////////////////
-		// Acquisition information - general
-		// //////////////////////////////////////////////////////////
-		x = 19;
-		descriptions[x] = "Imaging device name";
-		type[x] = BYTE;
-		valLength[x] = 10;
-
-		x = 20;
-		descriptions[x] = "Device serial number";
-		type[x] = BYTE;
-		valLength[x] = 12;
-
-		x = 21;
-		descriptions[x] = "Collimator used";
-		type[x] = BYTE;
-		valLength[x] = 6;
-
-		x = 22;
-		descriptions[x] = "Software version number";
-		type[x] = BYTE;
-		valLength[x] = 8;
-
-		x = 23;
-		descriptions[x] = "Radiopharmaceutical 1";
-		type[x] = BYTE;
-		valLength[x] = 16;
-
-		x = 24;
-		descriptions[x] = "Dosage 1";
-		type[x] = SHORT;
-		valLength[x] = 2;
-
-		x = 25;
-		descriptions[x] = "Radiopharmaceutical 2";
-		type[x] = BYTE;
-		valLength[x] = 16;
-
-		x = 26;
-		descriptions[x] = "Dosage 2";
-		type[x] = SHORT;
-		valLength[x] = 2;
-
-		x = 27;
-		descriptions[x] = "Isotope imaging mode";
-		type[x] = BYTE;
-		valLength[x] = 1;
-
-		x = 28;
-		descriptions[x] = "Energy window 1 (center)";
-		type[x] = SHORT;
-		valLength[x] = 2;
-
-		x = 29;
-		descriptions[x] = "Energy window 1 (width)";
-		type[x] = SHORT;
-		valLength[x] = 2;
-
-		x = 30;
-		descriptions[x] = "Energy window 2 (center)";
-		type[x] = SHORT;
-		valLength[x] = 2;
-
-		x = 31;
-		descriptions[x] = "Energy window 2 (width)";
-		type[x] = SHORT;
-		valLength[x] = 2;
-
-		x = 32;
-		descriptions[x] = "Energy window 3 (center)";
-		type[x] = SHORT;
-		valLength[x] = 2;
-
-		x = 33;
-		descriptions[x] = "Energy window 3 (width)";
-		type[x] = SHORT;
-		valLength[x] = 2;
-
-		x = 34;
-		descriptions[x] = "Energy window 4 (center)";
-		type[x] = SHORT;
-		valLength[x] = 2;
-
-		x = 35;
-		descriptions[x] = "Energy window 4 (width)";
-		type[x] = SHORT;
-		valLength[x] = 2;
-
-		x = 36;
-		descriptions[x] = "Patient orientation";
-		type[x] = BYTE;
-		valLength[x] = 6;
-
-		x = 110;
-		descriptions[x] = "Directional orientation";
-		type[x] = BYTE;
-		valLength[x] = 1;
-
-		x = 37;
-		descriptions[x] = "Spatial resolution (mm)";
-		type[x] = FLOAT; // in mm
-		valLength[x] = 4;
-
-		x = 38;
-		descriptions[x] = "Slice thickness (mm)";
-		type[x] = FLOAT; // in mm
-		valLength[x] = 4;
-
-		x = 39;
-		descriptions[x] = "X-dimensions";
-		type[x] = SHORT;
-		valLength[x] = 2;
-
-		x = 40;
-		descriptions[x] = "Y-dimensions";
-		type[x] = SHORT;
-		valLength[x] = 2;
-
-		x = 41;
-		descriptions[x] = "Z-dimensions";
-		type[x] = SHORT;
-		valLength[x] = 2;
-
-		x = 86;
-		descriptions[x] = "Number of image sets";
-		type[x] = SHORT;
-		valLength[x] = 2;
-
-		x = 42;
-		descriptions[x] = "Pixel bit-depth";
-		type[x] = SHORT;
-		valLength[x] = 2;
-
-		x = 85;
-		descriptions[x] = "True colour flag";
-		type[x] = BYTE;
-		valLength[x] = 1;
-
-		x = 43;
-		descriptions[x] = "Uniformity correction";
-		type[x] = BYTE;
-		valLength[x] = 20;
-
-		x = 44;
-		descriptions[x] = "Zoom";
-		type[x] = FLOAT;
-		valLength[x] = 4;
-
-		x = 111;
-		descriptions[x] = "VFR struct";
-		type[x] = BYTE;
-		valLength[x] = 64;
-
-		// //////////////////////////////////////////////////////////
-		// Acquisition information - multiframe specific
-		// //////////////////////////////////////////////////////////
-
-		x = 45;
-		descriptions[x] = "Total counts in frame";
-		type[x] = FLOAT;
-		valLength[x] = 4;
-
-		x = 46;
-		descriptions[x] = "Frame time (ms)";
-		type[x] = INT; // in ms
-		valLength[x] = 4;
-
-		x = 47;
-		descriptions[x] = "Acquisition time (ms)";
-		type[x] = INT; // in ms
-		valLength[x] = 4;
-
-		x = 84;
-		descriptions[x] = "Unused";
-		type[x] = BYTE;
-		valLength[x] = 8;
-
-		x = 48;
-		descriptions[x] = "Max value in frame/set";
-		type[x] = FLOAT;
-		valLength[x] = 4;
-
-		x = 49;
-		descriptions[x] = "Min value in frame/set";
-		type[x] = FLOAT;
-		valLength[x] = 4;
-
-		x = 87;
-		descriptions[x] = "Scale factor";
-		type[x] = FLOAT;
-		valLength[x] = 4;
-
-		// //////////////////////////////////////////////////////////
-		// Acquisition information - gated specific
-		// //////////////////////////////////////////////////////////
-
-		x = 50;
-		descriptions[x] = "R-R interval time";
-		type[x] = SHORT;
-		valLength[x] = 2;
-
-		x = 112;
-		descriptions[x] = "R-R low tolerance time";
-		type[x] = SHORT;
-		valLength[x] = 2;
-
-		x = 113;
-		descriptions[x] = "R-R high tolerance time";
-		type[x] = SHORT;
-		valLength[x] = 2;
-
-		x = 51;
-		descriptions[x] = "Cycles imaged (%)";
-		type[x] = SHORT;
-		valLength[x] = 2;
-
-		x = 52;
-		descriptions[x] = "Cycles accepted (%)";
-		type[x] = SHORT;
-		valLength[x] = 2;
-
-		x = 53;
-		descriptions[x] = "Cycles rejected (%)";
-		type[x] = SHORT;
-		valLength[x] = 2;
-
-		x = 54;
-		descriptions[x] = "End diastolic frame (approx)";
-		type[x] = SHORT;
-		valLength[x] = 2;
-
-		x = 55;
-		descriptions[x] = "End systolic frame (approx)";
-		type[x] = SHORT;
-		valLength[x] = 2;
-
-		x = 56;
-		descriptions[x] = "Ejection fraction (approx)";
-		type[x] = FLOAT;
-		valLength[x] = 4;
-
-		// //////////////////////////////////////////////////////////
-		// Acquisition information - SPECT specific
-		// //////////////////////////////////////////////////////////
-
-		x = 57;
-		descriptions[x] = "Starting angle";
-		type[x] = SHORT;
-		valLength[x] = 2;
-
-		x = 58;
-		descriptions[x] = "Degrees of rotation";
-		type[x] = SHORT;
-		valLength[x] = 2;
-
-		x = 59;
-		descriptions[x] = "Direction of rotation";
-		type[x] = BYTE; // "+" or "-"
-		valLength[x] = 1;
-
-		x = 60;
-		descriptions[x] = "Reorientation type";
-		type[x] = BYTE; // C for cardiac, B for brain, N for normal
-		valLength[x] = 1;
+	}
+	
+	/**
+	 * Populate Exam Information
+	 */
+	private void examInfo(){
+		
+		descriptions[ACQUISITION_DATE] = "Acquisition date";
+		type[ACQUISITION_DATE] = BYTE;
+		valLength[ACQUISITION_DATE] = 8; // YYYYMMDD
+
+		descriptions[DOSE_ADMIN_TIME] = "Dose admin. time";
+		type[DOSE_ADMIN_TIME] = BYTE;
+		valLength[DOSE_ADMIN_TIME] = 8; // HH:MM:SS
+
+		descriptions[UNIQUE_EXAM_KEY] = "Unique exam key";
+		type[UNIQUE_EXAM_KEY] = BYTE;
+		valLength[UNIQUE_EXAM_KEY] = 8;
+
+		descriptions[EXAM_PROCEDURE] = "Exam procedure";
+		type[EXAM_PROCEDURE] = BYTE;
+		valLength[EXAM_PROCEDURE] = 36;
+
+		descriptions[REFFERING_PHYSICIAN] = "Reffering physician";
+		type[REFFERING_PHYSICIAN] = BYTE;
+		valLength[REFFERING_PHYSICIAN] = 20;
+
+		descriptions[ATTENDING_PHYSICIAN] = "Attending physician";
+		type[ATTENDING_PHYSICIAN] = BYTE;
+		valLength[ATTENDING_PHYSICIAN] = 20;
+
+		descriptions[IMAGING_MODALITY] = "Imaging modality";
+		type[IMAGING_MODALITY] = BYTE;
+		valLength[IMAGING_MODALITY] = 2;
+
+		descriptions[INSTITUTION_NAME] = "Institution name";
+		type[INSTITUTION_NAME] = BYTE;
+		valLength[INSTITUTION_NAME] = 20;
+
+		descriptions[NRML_CRV_FILE_NAME] = "Nrml crv file name";
+		type[NRML_CRV_FILE_NAME] = BYTE;
+		valLength[NRML_CRV_FILE_NAME] = 10;
+
+		descriptions[HISTOG_CRV_FILE_NAME] = "Histog. crv file name";
+		type[HISTOG_CRV_FILE_NAME] = BYTE;
+		valLength[HISTOG_CRV_FILE_NAME] = 20;
+
+		descriptions[ACQUISITION_START_TIME] = "Acquisition start time";
+		type[ACQUISITION_START_TIME] = BYTE;
+		valLength[ACQUISITION_START_TIME] = 10;
+	}
+	
+	/**
+	 * Populate relational information
+	 */
+	private void relational(){
+
+		descriptions[DATA_TYPE] = "Data type";
+		type[DATA_TYPE] = BYTE;
+		valLength[DATA_TYPE] = 2;
+
+		descriptions[IMAGE_VIEW_ID] = "Image view ID";
+		type[IMAGE_VIEW_ID] = BYTE;
+		valLength[IMAGE_VIEW_ID] = 16;
+
+		descriptions[UNIQUE_OBJECT_KEY] = "Unique object key";
+		type[UNIQUE_OBJECT_KEY] = BYTE;
+		valLength[UNIQUE_OBJECT_KEY] = 3;
+
+		descriptions[ASSOCIATED_PARENT_FILE] = "Associated parent file";
+		type[ASSOCIATED_PARENT_FILE] = BYTE;
+		valLength[ASSOCIATED_PARENT_FILE] = 20;
+	}
+	
+	/**
+	 * Populate general acquisition information
+	 */
+	private void generalAcquisitionInfo(){
+
+		descriptions[IMAGING_DEVICE_NAME] = "Imaging device name";
+		type[IMAGING_DEVICE_NAME] = BYTE;
+		valLength[IMAGING_DEVICE_NAME] = 10;
+
+		descriptions[DEVICE_SERIAL_NUMBER] = "Device serial number";
+		type[DEVICE_SERIAL_NUMBER] = BYTE;
+		valLength[DEVICE_SERIAL_NUMBER] = 12;
+
+		descriptions[COLLIMATOR_USED] = "Collimator used";
+		type[COLLIMATOR_USED] = BYTE;
+		valLength[COLLIMATOR_USED] = 6;
+
+		descriptions[SOFTWARE_VERSION_NUMBER] = "Software version number";
+		type[SOFTWARE_VERSION_NUMBER] = BYTE;
+		valLength[SOFTWARE_VERSION_NUMBER] = 8;
+
+		descriptions[RADIOPHARMACEUTICAL_1] = "Radiopharmaceutical 1";
+		type[RADIOPHARMACEUTICAL_1] = BYTE;
+		valLength[RADIOPHARMACEUTICAL_1] = 16;
+
+		descriptions[DOSAGE_1] = "Dosage 1";
+		type[DOSAGE_1] = SHORT;
+		valLength[DOSAGE_1] = 2;
+
+		descriptions[RADIOPHARMACEUTICAL_2] = "Radiopharmaceutical 2";
+		type[RADIOPHARMACEUTICAL_2] = BYTE;
+		valLength[RADIOPHARMACEUTICAL_2] = 16;
+
+		descriptions[DOSAGE_2] = "Dosage 2";
+		type[DOSAGE_2] = SHORT;
+		valLength[DOSAGE_2] = 2;
+
+		descriptions[ISOTOPE_IMAGING_MODE] = "Isotope imaging mode";
+		type[ISOTOPE_IMAGING_MODE] = BYTE;
+		valLength[ISOTOPE_IMAGING_MODE] = 1;
+
+		descriptions[ENERGY_WINDOW_1_CENTER] = "Energy window 1 (center)";
+		type[ENERGY_WINDOW_1_CENTER] = SHORT;
+		valLength[ENERGY_WINDOW_1_CENTER] = 2;
+
+		descriptions[ENERGY_WINDOW_1_WIDTH] = "Energy window 1 (width)";
+		type[ENERGY_WINDOW_1_WIDTH] = SHORT;
+		valLength[ENERGY_WINDOW_1_WIDTH] = 2;
+
+		descriptions[ENERGY_WINDOW_2_CENTER] = "Energy window 2 (center)";
+		type[ENERGY_WINDOW_2_CENTER] = SHORT;
+		valLength[ENERGY_WINDOW_2_CENTER] = 2;
+
+		descriptions[ENERGY_WINDOW_2_WIDTH] = "Energy window 2 (width)";
+		type[ENERGY_WINDOW_2_WIDTH] = SHORT;
+		valLength[ENERGY_WINDOW_2_WIDTH] = 2;
+
+		descriptions[ENERGY_WINDOW_3_CENTER] = "Energy window 3 (center)";
+		type[ENERGY_WINDOW_3_CENTER] = SHORT;
+		valLength[ENERGY_WINDOW_3_CENTER] = 2;
+
+		descriptions[ENERGY_WINDOW_3_WIDTH] = "Energy window 3 (width)";
+		type[ENERGY_WINDOW_3_WIDTH] = SHORT;
+		valLength[ENERGY_WINDOW_3_WIDTH] = 2;
+
+		descriptions[ENERGY_WINDOW_4_CENTER] = "Energy window 4 (center)";
+		type[ENERGY_WINDOW_4_CENTER] = SHORT;
+		valLength[ENERGY_WINDOW_4_CENTER] = 2;
+
+		descriptions[ENERGY_WINDOW_4_WIDTH] = "Energy window 4 (width)";
+		type[ENERGY_WINDOW_4_WIDTH] = SHORT;
+		valLength[ENERGY_WINDOW_4_WIDTH] = 2;
+
+		descriptions[PATIENT_ORIENTATION] = "Patient orientation";
+		type[PATIENT_ORIENTATION] = BYTE;
+		valLength[PATIENT_ORIENTATION] = 6;
+
+		descriptions[DIRECTIONAL_ORIENTATION] = "Directional orientation";
+		type[DIRECTIONAL_ORIENTATION] = BYTE;
+		valLength[DIRECTIONAL_ORIENTATION] = 1;
+
+		descriptions[SPATIAL_RESOLUTION] = "Spatial resolution (mm)";
+		type[SPATIAL_RESOLUTION] = FLOAT; // in mm
+		valLength[SPATIAL_RESOLUTION] = 4;
+
+		descriptions[SLICE_THICKNESS] = "Slice thickness (mm)";
+		type[SLICE_THICKNESS] = FLOAT; // in mm
+		valLength[SLICE_THICKNESS] = 4;
+
+		descriptions[X_DIMENSIONS] = "X-dimensions";
+		type[X_DIMENSIONS] = SHORT;
+		valLength[X_DIMENSIONS] = 2;
+
+		descriptions[Y_DIMENSIONS] = "Y-dimensions";
+		type[Y_DIMENSIONS] = SHORT;
+		valLength[Y_DIMENSIONS] = 2;
+
+		descriptions[Z_DIMENSIONS] = "Z-dimensions";
+		type[Z_DIMENSIONS] = SHORT;
+		valLength[Z_DIMENSIONS] = 2;
+
+		descriptions[NUMBER_OF_IMAGE_SETS] = "Number of image sets";
+		type[NUMBER_OF_IMAGE_SETS] = SHORT;
+		valLength[NUMBER_OF_IMAGE_SETS] = 2;
+
+		descriptions[PIXEL_BIT_DEPTH] = "Pixel bit-depth";
+		type[PIXEL_BIT_DEPTH] = SHORT;
+		valLength[PIXEL_BIT_DEPTH] = 2;
+
+		descriptions[TRUE_COLOUR_FLAG] = "True colour flag";
+		type[TRUE_COLOUR_FLAG] = BYTE;
+		valLength[TRUE_COLOUR_FLAG] = 1;
+
+		descriptions[UNIFORMITY_CORRECTION] = "Uniformity correction";
+		type[UNIFORMITY_CORRECTION] = BYTE;
+		valLength[UNIFORMITY_CORRECTION] = 20;
+
+		descriptions[ZOOM] = "Zoom";
+		type[ZOOM] = FLOAT;
+		valLength[ZOOM] = 4;
+
+		descriptions[VFR_STRUCT] = "VFR struct";
+		type[VFR_STRUCT] = BYTE;
+		valLength[VFR_STRUCT] = 64;
+	}
+	
+	/**
+	 * 	Populate Multiframe-specific acquisition information
+	 */
+	private void multiframeInfo(){
+
+		descriptions[TOTAL_COUNTS_IN_FRAME] = "Frame time (ms)";
+		type[TOTAL_COUNTS_IN_FRAME] = INT; // in ms
+		valLength[TOTAL_COUNTS_IN_FRAME] = 4;
+
+		descriptions[ACQUISITION_TIME] = "Acquisition time (ms)";
+		type[ACQUISITION_TIME] = INT; // in ms
+		valLength[ACQUISITION_TIME] = 4;
+
+		descriptions[UNUSED] = "Unused";
+		type[UNUSED] = BYTE;
+		valLength[UNUSED] = 8;
+
+		descriptions[MAX_VALUE_IN_SET] = "Max value in frame/set";
+		type[MAX_VALUE_IN_SET] = FLOAT;
+		valLength[MAX_VALUE_IN_SET] = 4;
+
+		descriptions[MIN_VALUE_IN_SET] = "Min value in frame/set";
+		type[MIN_VALUE_IN_SET] = FLOAT;
+		valLength[MIN_VALUE_IN_SET] = 4;
+
+		descriptions[SCALE_FACTOR] = "Scale factor";
+		type[SCALE_FACTOR] = FLOAT;
+		valLength[SCALE_FACTOR] = 4;
+	}
+	
+	/**
+	 * 	Populate Gated-specific acquisition information
+	 */
+	private void gatedInfo(){
+
+		descriptions[R_R_INTERVAL_TIME] = "R-R interval time";
+		type[R_R_INTERVAL_TIME] = SHORT;
+		valLength[R_R_INTERVAL_TIME] = 2;
+
+		descriptions[R_R_LOW_TOLERANCE_TIME] = "R-R low tolerance time";
+		type[R_R_LOW_TOLERANCE_TIME] = SHORT;
+		valLength[R_R_LOW_TOLERANCE_TIME] = 2;
+
+		descriptions[R_R_HIGH_TOLERANCE_TIME] = "R-R high tolerance time";
+		type[R_R_HIGH_TOLERANCE_TIME] = SHORT;
+		valLength[R_R_HIGH_TOLERANCE_TIME] = 2;
+
+		descriptions[CYCLES_IMAGED_PC] = "Cycles imaged (%)";
+		type[CYCLES_IMAGED_PC] = SHORT;
+		valLength[CYCLES_IMAGED_PC] = 2;
+
+		descriptions[CYCLES_ACCEPTED_PC] = "Cycles accepted (%)";
+		type[CYCLES_ACCEPTED_PC] = SHORT;
+		valLength[CYCLES_ACCEPTED_PC] = 2;
+
+		descriptions[CYCLES_REJECTED_PC] = "Cycles rejected (%)";
+		type[CYCLES_REJECTED_PC] = SHORT;
+		valLength[CYCLES_REJECTED_PC] = 2;
+
+		descriptions[END_DIASTOLIC_FRAME] = "End diastolic frame (approx)";
+		type[END_DIASTOLIC_FRAME] = SHORT;
+		valLength[END_DIASTOLIC_FRAME] = 2;
+
+		descriptions[END_SYSTOLIC_FRAME] = "End systolic frame (approx)";
+		type[END_SYSTOLIC_FRAME] = SHORT;
+		valLength[END_SYSTOLIC_FRAME] = 2;
+
+		descriptions[EJECTION_FRACTION] = "Ejection fraction (approx)";
+		type[EJECTION_FRACTION] = FLOAT;
+		valLength[EJECTION_FRACTION] = 4;
+	}
+	
+	/**
+	 * 	Populate SPECT-specific acquisition information
+	 */
+	private void spectInfo(){
+
+		descriptions[STARTING_ANGLE] = "Starting angle";
+		type[STARTING_ANGLE] = SHORT;
+		valLength[STARTING_ANGLE] = 2;
+
+		descriptions[DEGREES_OF_ROTATION] = "Degrees of rotation";
+		type[DEGREES_OF_ROTATION] = SHORT;
+		valLength[DEGREES_OF_ROTATION] = 2;
+
+		descriptions[DIRECTION_OF_ROTATION] = "Direction of rotation";
+		type[DIRECTION_OF_ROTATION] = BYTE; // "+" or "-"
+		valLength[DIRECTION_OF_ROTATION] = 1;
+
+		descriptions[REORIENTATION_TYPE] = "Reorientation type";
+		type[REORIENTATION_TYPE] = BYTE; // C for cardiac, B for brain, N for normal
+		valLength[REORIENTATION_TYPE] = 1;
 
 		// ADAC description: Start frame, reconstruction limit
-		x = 61;
-		descriptions[x] = "Reconstructed slices";
-		type[x] = SHORT;
-		valLength[x] = 2;
+		descriptions[RECONSTRUCTED_SLICES] = "Reconstructed slices";
+		type[RECONSTRUCTED_SLICES] = SHORT;
+		valLength[RECONSTRUCTED_SLICES] = 2;
+	}
+	
+	/**
+	 * Populate Image display information
+	 */
+	private void imageDisplay(){
 
-		// //////////////////////////////////////////////////////////
-		// Image display information
-		// //////////////////////////////////////////////////////////
+		descriptions[UPPER_WINDOW_GRAY_LEVEL] = "Upper window gray level";
+		type[UPPER_WINDOW_GRAY_LEVEL] = SHORT;
+		valLength[UPPER_WINDOW_GRAY_LEVEL] = 2;
 
-		x = 62;
-		descriptions[x] = "Upper window gray level";
-		type[x] = SHORT;
-		valLength[x] = 2;
+		descriptions[LOWER_LEVEL_GRAY_LEVEL] = "Lower level gray level";
+		type[LOWER_LEVEL_GRAY_LEVEL] = SHORT;
+		valLength[LOWER_LEVEL_GRAY_LEVEL] = 2;
 
-		x = 63;
-		descriptions[x] = "Lower level gray level";
-		type[x] = SHORT;
-		valLength[x] = 2;
+		descriptions[ASSOCIATED_COLOUR_MAP] = "Associated colour map";
+		type[ASSOCIATED_COLOUR_MAP] = SHORT;
+		valLength[ASSOCIATED_COLOUR_MAP] = 2;
 
-		x = 64;
-		descriptions[x] = "Associated colour map";
-		type[x] = SHORT;
-		valLength[x] = 2;
+		descriptions[CUSTOMISED_COLOUR_MAP] = "Customised colour map";
+		type[CUSTOMISED_COLOUR_MAP] = BYTE;
+		valLength[CUSTOMISED_COLOUR_MAP] = 20; // Filename (very short, should be in same dir)
+	}
+	
+	/**
+	 * Populate image processing information
+	 */
+	private void imageProcessing(){
 
-		x = 65;
-		descriptions[x] = "Customised colour map";
-		type[x] = BYTE;
-		valLength[x] = 20; // Filename (very short, should be in same dir)
+		descriptions[MANIPULATED_IMAGE] = "Manipulated image";
+		type[MANIPULATED_IMAGE] = BYTE;
+		valLength[MANIPULATED_IMAGE] = 1; // Y/N
 
-		// //////////////////////////////////////////////////////////
-		// Image processing information
-		// //////////////////////////////////////////////////////////
+		descriptions[AXIS_OF_ROTATION_CORR] = "Axis of rotation corr.";
+		type[AXIS_OF_ROTATION_CORR] = SHORT;
+		valLength[AXIS_OF_ROTATION_CORR] = 2;
 
-		x = 66;
-		descriptions[x] = "Manipulated image";
-		type[x] = BYTE;
-		valLength[x] = 1; // Y/N
+		descriptions[REORIENTATION_AZIMUTH] = "Reorientation azimuth";
+		type[REORIENTATION_AZIMUTH] = SHORT;
+		valLength[REORIENTATION_AZIMUTH] = 2;
 
-		x = 67;
-		descriptions[x] = "Axis of rotation corr.";
-		type[x] = SHORT;
-		valLength[x] = 2;
+		descriptions[REORIENTATION_ELEVATION] = "Reorientation elevation";
+		type[REORIENTATION_ELEVATION] = SHORT;
+		valLength[REORIENTATION_ELEVATION] = 2;
 
-		x = 68;
-		descriptions[x] = "Reorientation azimuth";
-		type[x] = SHORT;
-		valLength[x] = 2;
+		descriptions[FILTER_TYPE] = "Filter type";
+		type[FILTER_TYPE] = BYTE;
+		valLength[FILTER_TYPE] = 16;
 
-		x = 69;
-		descriptions[x] = "Reorientation elevation";
-		type[x] = SHORT;
-		valLength[x] = 2;
+		descriptions[FILTER_ORDER] = "Filter order";
+		type[FILTER_ORDER] = SHORT;
+		valLength[FILTER_ORDER] = 2;
 
-		x = 70;
-		descriptions[x] = "Filter type";
-		type[x] = BYTE;
-		valLength[x] = 16;
+		descriptions[CUTOFF_FREQUENCY] = "Cutoff frequency";
+		type[CUTOFF_FREQUENCY] = FLOAT;
+		valLength[CUTOFF_FREQUENCY] = 4;
 
-		x = 71;
-		descriptions[x] = "Filter order";
-		type[x] = SHORT;
-		valLength[x] = 2;
+		descriptions[RECONSTRUCTION_TYPE] = "Reconstruction type";
+		type[RECONSTRUCTION_TYPE] = BYTE;
+		valLength[RECONSTRUCTION_TYPE] = 4; // eg OSA = oblique short axis
 
-		x = 72;
-		descriptions[x] = "Cutoff frequency";
-		type[x] = FLOAT;
-		valLength[x] = 4;
+		descriptions[ATTENUATION_COEFFICIENT] = "Attenuation coefficient";
+		type[ATTENUATION_COEFFICIENT] = FLOAT;
+		valLength[ATTENUATION_COEFFICIENT] = 4;
+	}
+	
+	/**
+	 * Populate ADAC EXtras - programme specific information
+	 */
+	private void programSpecificInfo() {
 
-		x = 73;
-		descriptions[x] = "Reconstruction type";
-		type[x] = BYTE;
-		valLength[x] = 4; // eg OSA = oblique short axis
-
-		x = 74;
-		descriptions[x] = "Attenuation coefficient";
-		type[x] = FLOAT;
-		valLength[x] = 4;
-
-		// //////////////////////////////////////////////////////////
-		// Program specific and "extra" object information
-		// //////////////////////////////////////////////////////////
-
-		x = 114;
-		descriptions[x] = "Program specific";
-		type[x] = BYTE;
-		valLength[x] = 800;
+		descriptions[PROGRAM_SPECIFIC] = "Program specific";
+		type[PROGRAM_SPECIFIC] = BYTE;
+		valLength[PROGRAM_SPECIFIC] = 800;
 
 	}
 }
