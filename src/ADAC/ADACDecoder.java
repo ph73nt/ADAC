@@ -1,17 +1,19 @@
 package ADAC;
 
-import ij.io.FileInfo;
-
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
-public class ADACDecoder {
+import ij.io.FileInfo;
+
+public class ADACDecoder implements KvpListener {
 
 	private String directory, fileName;
 	private ByteBuffer keyBuffer;
@@ -20,15 +22,15 @@ public class ADACDecoder {
 	private BufferedInputStream inputStream;
 	private BufferedInputStream f;
 	private byte[] valHeaders;
-	
+
 	private final Map<Short, String> stringsMap;
 	private final Map<Short, Short> shortsMap;
 	private final Map<Short, Integer> intsMap;
 	private final Map<Short, Float> floatsMap;
 	private final Map<Short, Integer> bitDepthMap;
+	private final ArrayList<ADACKvp> keyList;
 	
-	public String header, AD_Type, AD_ex_objs;
-	public String[] values = new String[ADACDictionary.NUM_KEYS + 1];
+	public String AD_Type, AD_ex_objs;
 	public int xdim, ydim, bitDepth;
 	public int zdim = 1;
 	public int slices = 1;
@@ -37,23 +39,25 @@ public class ADACDecoder {
 	private FileInfo fi;
 
 	public ADACDecoder(String directory, String fileName) {
-		
+
 		this.directory = directory;
 		this.fileName = fileName;
-		
+
 		stringsMap = new HashMap<Short, String>();
 		shortsMap = new HashMap<Short, Short>();
 		intsMap = new HashMap<Short, Integer>();
 		floatsMap = new HashMap<Short, Float>();
+
+		keyList = new ArrayList<ADACKvp>();
 		
 		fi = new FileInfo();
-		
+
 		// Bit depth and set the default bit depth
 		bitDepthMap = new HashMap<Short, Integer>();
 		bitDepthMap.put(null, FileInfo.GRAY16_SIGNED);
-		bitDepthMap.put((short)8, FileInfo.GRAY8);
-		bitDepthMap.put((short)16, FileInfo.GRAY16_SIGNED);
-		bitDepthMap.put((short)32, FileInfo.GRAY32_FLOAT);
+		bitDepthMap.put((short) 8, FileInfo.GRAY8);
+		bitDepthMap.put((short) 16, FileInfo.GRAY16_SIGNED);
+		bitDepthMap.put((short) 32, FileInfo.GRAY32_FLOAT);
 
 	}
 
@@ -110,17 +114,15 @@ public class ADACDecoder {
 		valBuffer = ByteBuffer.wrap(valHeaders);
 
 		// Parse the header
-		header = getHeader();
+		parseHeader();
 		setValues();
 		fi = parseADACExtras(fi);
-
+		
 		return fi;
 
 	}
 
-	private String getHeader() throws IOException {
-
-		String hdr;
+	private void parseHeader() throws IOException {
 
 		// ////////////////////////////////////////////////////////////
 		// Administrative header info
@@ -129,8 +131,7 @@ public class ADACDecoder {
 		// First 10 bytes reserved for preamble
 		byte[] sixBytes = new byte[6];
 		keyBuffer.get(sixBytes, 0, 6);
-		hdr = new String(sixBytes) + "\n";
-		Log.log(hdr); // says adac01
+		Log.log(new String(sixBytes) + "\n"); // says adac01
 
 		try {
 
@@ -146,62 +147,35 @@ public class ADACDecoder {
 				// ...the keynum (description)
 				// ...the offset to the value
 				ADACKey key = getKeys();
-				short fieldOffset = key.getFieldOffset();
-				short keynum = key.getKeyNum();
-				byte keyType = key.getDataType();
 
-				switch (keyType) {
+				switch (key.getDataType()) {
 
 				case ADACDictionary.BYTE:
 
-					// How long is this byte[]?
-					int len = dict.valLength[keynum];
-					byte[] bytes = new byte[len];
-
-					// Move the value buffer to the correct location
-					valBuffer.position(fieldOffset);
-					valBuffer.get(bytes, 0, len);
-					String string = new String(bytes);
-
-					stringsMap.put(keynum, string);
-					Log.log(keynum + ", " + keyType + ", " + fieldOffset + ", " + string);
+					keyList.add(new ByteKvp(this, key));
 					break;
 
 				case ADACDictionary.SHORT:
 
-					short shortValue = valBuffer.getShort(fieldOffset);
-					shortsMap.put(keynum, shortValue);
-					Log.log(keynum + ", " + keyType + ", " + fieldOffset + ", " + shortValue);
-					
+					keyList.add(new ShortKvp(this, key));
 					break;
-					
+
 				case ADACDictionary.INT:
 
-					int m_Int = valBuffer.getInt(fieldOffset);
-					intsMap.put(keynum, m_Int);
-					Log.log(keynum + ", " + keyType + ", " + fieldOffset + ", " + m_Int);
-					
+					keyList.add(new IntKvp(this, key));
 					break;
 
 				case ADACDictionary.FLOAT:
 
-					float floatValue = valBuffer.getFloat(fieldOffset);
-					floatsMap.put(keynum, floatValue);
-					Log.log(keynum + ", " + keyType + ", " + fieldOffset + ", " + floatValue);
-					
+					keyList.add(new FloatKvp(this, key));
 					break;
 
 				}
 
-				hdr += dict.descriptions[keynum] + " = " + values[keynum] + "\n";
-
 			}
-
-			return hdr;
 
 		} catch (IOException e) {
 			Log.error("ADAC Decoder", "Failed to retrieve ADAC image file header. " + "Is this an ADAC image file?");
-			return null;
 		}
 	}
 
@@ -217,14 +191,14 @@ public class ADACDecoder {
 		zdim = shortsMap.get(ADACDictionary.Z_DIMENSIONS);
 		slices = shortsMap.get(ADACDictionary.RECONSTRUCTED_SLICES);
 		intervals = shortsMap.get(ADACDictionary.NUMBER_OF_IMAGE_SETS);
-		
+
 		short adBitDepth = shortsMap.get(ADACDictionary.PIXEL_BIT_DEPTH);
 		fi.fileType = bitDepthMap.get(adBitDepth);
-		
+
 		// Ints
 		// Convert from milliseconds to seconds
 		fi.frameInterval = intsMap.get(ADACDictionary.FRAME_TIME) / 1000;
-		
+
 		// Gated or non-gated
 		if (isGated()) {
 			// The GE data type represents gated objects...
@@ -343,9 +317,9 @@ public class ADACDecoder {
 	public boolean isGated() {
 
 		if (AD_Type == null) {
-			
+
 			return false;
-		
+
 		} else if (AD_Type.equals("GE") || AD_Type.equals("GP")) {
 
 			// GE - Gated ECT
@@ -353,10 +327,69 @@ public class ADACDecoder {
 			return true;
 
 		} else {
-		
+
 			return false;
 		}
 
+	}
+
+	public void read(ByteKvp byteKvp) {
+
+		// How long is this byte[]?
+		int len = dict.valLength[byteKvp.getKeyNum()];
+		byte[] bytes = new byte[len];
+
+		// Move the value buffer to the correct location
+		valBuffer.position(byteKvp.getFieldOffset());
+		valBuffer.get(bytes, 0, len);
+		byteKvp.setString(bytes);
+
+		stringsMap.put(byteKvp.getKeyNum(), byteKvp.getString());
+		Log.log(byteKvp.getLogString());
+
+	}
+
+	public void read(ShortKvp shortKvp) {
+
+		short shortValue = valBuffer.getShort(shortKvp.getFieldOffset());
+		shortKvp.setValue(shortValue);
+		shortsMap.put(shortKvp.getKeyNum(), shortKvp.getValue());
+		Log.log(shortKvp.getLogString());
+
+	}
+
+	public void read(IntKvp intKvp) {
+
+		int m_Int = valBuffer.getInt(intKvp.getFieldOffset());
+		intKvp.setValue(m_Int);
+		intsMap.put(intKvp.getKeyNum(), intKvp.getValue());
+		Log.log(intKvp.getLogString());
+
+	}
+
+	public void read(FloatKvp floatKvp) {
+
+		float floatValue = valBuffer.getFloat(floatKvp.getFieldOffset());
+		floatKvp.setValue(floatValue);
+		floatsMap.put(floatKvp.getKeyNum(), floatKvp.getValue());
+		Log.log(floatKvp.getLogString());
+
+	}
+
+	public Object getImageInfo() {
+
+		StringBuffer header = new StringBuffer();
+		
+		Iterator<ADACKvp> it = keyList.iterator();
+		while(it.hasNext()){
+			ADACKvp ak = it.next();
+			header.append(dict.descriptions[ak.getKeyNum()]);
+			header.append(" = ");
+			header.append(ak.getString());
+			header.append("\n");
+		}
+		
+		return header.toString().trim();
 	}
 
 }

@@ -45,7 +45,8 @@ public class ADACDictionary {
 	 */
 	public static final int FLOAT = 3;
 	/**
-	 * The miscellaneous data type of a key value pair.
+	 * The miscellaneous data type of a key value pair. Does not seem to be used
+	 * anywhere I have seen.
 	 */
 	public static final int VAR = 4;
 	/**
@@ -71,9 +72,9 @@ public class ADACDictionary {
 	public static final short PATIENT_ID = 2;
 	public static final short PATIENT_SEX = 3;
 	public static final short PATIENT_AGE = 4;
-	public static final short PATIENT_HEIGHT = 5; 
+	public static final short PATIENT_HEIGHT = 5;
 	public static final short PATIENT_WEIGHT = 6;
-	public static final short UNIQUE_PATIENT_KEY = 76;	
+	public static final short UNIQUE_PATIENT_KEY = 76;
 	public static final short DATE_OF_BIRTH = 109;
 
 	// //////////////////////////////////////////////////////////
@@ -186,12 +187,12 @@ public class ADACDictionary {
 	public static final short CUTOFF_FREQUENCY = 72;
 	public static final short RECONSTRUCTION_TYPE = 73;
 	public static final short ATTENUATION_COEFFICIENT = 74;
-	
+
 	// //////////////////////////////////////////////////////////
 	// Program specific and "extra" object information
 	// //////////////////////////////////////////////////////////
-	public static final short PROGRAM_SPECIFIC = 114;	
-	
+	public static final short PROGRAM_SPECIFIC = 114;
+
 	/**
 	 * Populates the ADAC key-value pairs information. There are arrays for KVP
 	 * descriptions, data type and value lengths.
@@ -225,11 +226,11 @@ public class ADACDictionary {
 		imageProcessing();
 		programSpecificInfo();
 	}
-	
+
 	/**
 	 * Populate patient demographics
 	 */
-	private void demogs(){
+	private void demogs() {
 
 		descriptions[PATIENT_NAME] = "Patient name";
 		type[PATIENT_NAME] = BYTE;
@@ -242,7 +243,7 @@ public class ADACDictionary {
 		descriptions[PATIENT_SEX] = "Patient sex";
 		type[PATIENT_SEX] = BYTE;
 		valLength[PATIENT_SEX] = 1;
-		
+
 		descriptions[PATIENT_AGE] = "Patient age";
 		type[PATIENT_AGE] = SHORT;
 		valLength[PATIENT_AGE] = 2;
@@ -264,12 +265,12 @@ public class ADACDictionary {
 		valLength[DATE_OF_BIRTH] = 8; // YYYYMMDD
 
 	}
-	
+
 	/**
 	 * Populate Exam Information
 	 */
-	private void examInfo(){
-		
+	private void examInfo() {
+
 		descriptions[ACQUISITION_DATE] = "Acquisition date";
 		type[ACQUISITION_DATE] = BYTE;
 		valLength[ACQUISITION_DATE] = 8; // YYYYMMDD
@@ -314,11 +315,11 @@ public class ADACDictionary {
 		type[ACQUISITION_START_TIME] = BYTE;
 		valLength[ACQUISITION_START_TIME] = 10;
 	}
-	
+
 	/**
 	 * Populate relational information
 	 */
-	private void relational(){
+	private void relational() {
 
 		descriptions[DATA_TYPE] = "Data type";
 		type[DATA_TYPE] = BYTE;
@@ -336,11 +337,11 @@ public class ADACDictionary {
 		type[ASSOCIATED_PARENT_FILE] = BYTE;
 		valLength[ASSOCIATED_PARENT_FILE] = 20;
 	}
-	
+
 	/**
 	 * Populate general acquisition information
 	 */
-	private void generalAcquisitionInfo(){
+	private void generalAcquisitionInfo() {
 
 		descriptions[IMAGING_DEVICE_NAME] = "Imaging device name";
 		type[IMAGING_DEVICE_NAME] = BYTE;
@@ -462,11 +463,11 @@ public class ADACDictionary {
 		type[VFR_STRUCT] = BYTE;
 		valLength[VFR_STRUCT] = 64;
 	}
-	
+
 	/**
-	 * 	Populate Multiframe-specific acquisition information
+	 * Populate Multiframe-specific acquisition information
 	 */
-	private void multiframeInfo(){
+	private void multiframeInfo() {
 
 		descriptions[TOTAL_COUNTS_IN_FRAME] = "Frame time (ms)";
 		type[TOTAL_COUNTS_IN_FRAME] = INT; // in ms
@@ -492,11 +493,11 @@ public class ADACDictionary {
 		type[SCALE_FACTOR] = FLOAT;
 		valLength[SCALE_FACTOR] = 4;
 	}
-	
+
 	/**
-	 * 	Populate Gated-specific acquisition information
+	 * Populate Gated-specific acquisition information
 	 */
-	private void gatedInfo(){
+	private void gatedInfo() {
 
 		descriptions[R_R_INTERVAL_TIME] = "R-R interval time";
 		type[R_R_INTERVAL_TIME] = SHORT;
@@ -534,11 +535,11 @@ public class ADACDictionary {
 		type[EJECTION_FRACTION] = FLOAT;
 		valLength[EJECTION_FRACTION] = 4;
 	}
-	
+
 	/**
-	 * 	Populate SPECT-specific acquisition information
+	 * Populate SPECT-specific acquisition information
 	 */
-	private void spectInfo(){
+	private void spectInfo() {
 
 		descriptions[STARTING_ANGLE] = "Starting angle";
 		type[STARTING_ANGLE] = SHORT;
@@ -553,7 +554,8 @@ public class ADACDictionary {
 		valLength[DIRECTION_OF_ROTATION] = 1;
 
 		descriptions[REORIENTATION_TYPE] = "Reorientation type";
-		type[REORIENTATION_TYPE] = BYTE; // C for cardiac, B for brain, N for normal
+		type[REORIENTATION_TYPE] = BYTE; // C for cardiac, B for brain, N for
+											// normal
 		valLength[REORIENTATION_TYPE] = 1;
 
 		// ADAC description: Start frame, reconstruction limit
@@ -561,11 +563,11 @@ public class ADACDictionary {
 		type[RECONSTRUCTED_SLICES] = SHORT;
 		valLength[RECONSTRUCTED_SLICES] = 2;
 	}
-	
+
 	/**
 	 * Populate Image display information
 	 */
-	private void imageDisplay(){
+	private void imageDisplay() {
 
 		descriptions[UPPER_WINDOW_GRAY_LEVEL] = "Upper window gray level";
 		type[UPPER_WINDOW_GRAY_LEVEL] = SHORT;
@@ -581,13 +583,14 @@ public class ADACDictionary {
 
 		descriptions[CUSTOMISED_COLOUR_MAP] = "Customised colour map";
 		type[CUSTOMISED_COLOUR_MAP] = BYTE;
-		valLength[CUSTOMISED_COLOUR_MAP] = 20; // Filename (very short, should be in same dir)
+		valLength[CUSTOMISED_COLOUR_MAP] = 20; // Filename (very short, should
+												// be in same dir)
 	}
-	
+
 	/**
 	 * Populate image processing information
 	 */
-	private void imageProcessing(){
+	private void imageProcessing() {
 
 		descriptions[MANIPULATED_IMAGE] = "Manipulated image";
 		type[MANIPULATED_IMAGE] = BYTE;
@@ -625,7 +628,7 @@ public class ADACDictionary {
 		type[ATTENUATION_COEFFICIENT] = FLOAT;
 		valLength[ATTENUATION_COEFFICIENT] = 4;
 	}
-	
+
 	/**
 	 * Populate ADAC EXtras - programme specific information
 	 */
