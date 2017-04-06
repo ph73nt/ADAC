@@ -52,18 +52,18 @@ public class ADACDictionary {
 	/**
 	 * Descriptions of ADAC key-value pairs that appear in the IJ image info
 	 */
-	public final String[] descriptions;
+	public final static String[] descriptions;
 	/**
 	 * Key-value pair data types
 	 */
-	public final int[] type;
+	public final static int[] type;
 	/**
 	 * Each value of a key-value pair is restricted to a set length and
 	 * null-padded if necessary. This often leads to truncation of long fields
 	 * such as patient name, which can be found in non-truncated format in the
 	 * ADAC Extra Objects field.
 	 */
-	public final int[] valLength;
+	public final static int[] valLength;
 
 	// //////////////////////////////////////////////////////////
 	// Patient demographics
@@ -193,15 +193,12 @@ public class ADACDictionary {
 	// //////////////////////////////////////////////////////////
 	public static final short PROGRAM_SPECIFIC = 114;
 
-	/**
-	 * Populates the ADAC key-value pairs information. There are arrays for KVP
-	 * descriptions, data type and value lengths.
-	 */
-	public ADACDictionary() {
+	static {
 
 		descriptions = new String[NUM_KEYS + 1];
 		type = new int[NUM_KEYS + 1];
 		valLength = new int[NUM_KEYS + 1];
+		
 		// Set array values to blanks strings or zeros
 		for (int i = 0; i < NUM_KEYS; i++) {
 			descriptions[i] = "";
@@ -214,23 +211,7 @@ public class ADACDictionary {
 		type[0] = 0;
 		valLength[0] = 0;
 
-		// Populate the arrays in easy to read chunks
-		demogs();
-		examInfo();
-		relational();
-		generalAcquisitionInfo();
-		multiframeInfo();
-		gatedInfo();
-		spectInfo();
-		imageDisplay();
-		imageProcessing();
-		programSpecificInfo();
-	}
-
-	/**
-	 * Populate patient demographics
-	 */
-	private void demogs() {
+		// Populate patient demographics
 
 		descriptions[PATIENT_NAME] = "Patient name";
 		type[PATIENT_NAME] = BYTE;
@@ -264,13 +245,7 @@ public class ADACDictionary {
 		type[DATE_OF_BIRTH] = BYTE;
 		valLength[DATE_OF_BIRTH] = 8; // YYYYMMDD
 
-	}
-
-	/**
-	 * Populate Exam Information
-	 */
-	private void examInfo() {
-
+		// Populate Exam Information
 		descriptions[ACQUISITION_DATE] = "Acquisition date";
 		type[ACQUISITION_DATE] = BYTE;
 		valLength[ACQUISITION_DATE] = 8; // YYYYMMDD
@@ -314,12 +289,8 @@ public class ADACDictionary {
 		descriptions[ACQUISITION_START_TIME] = "Acquisition start time";
 		type[ACQUISITION_START_TIME] = BYTE;
 		valLength[ACQUISITION_START_TIME] = 10;
-	}
 
-	/**
-	 * Populate relational information
-	 */
-	private void relational() {
+		// Populate relational information
 
 		descriptions[DATA_TYPE] = "Data type";
 		type[DATA_TYPE] = BYTE;
@@ -336,13 +307,8 @@ public class ADACDictionary {
 		descriptions[ASSOCIATED_PARENT_FILE] = "Associated parent file";
 		type[ASSOCIATED_PARENT_FILE] = BYTE;
 		valLength[ASSOCIATED_PARENT_FILE] = 20;
-	}
 
-	/**
-	 * Populate general acquisition information
-	 */
-	private void generalAcquisitionInfo() {
-
+		// Populate general acquisition information
 		descriptions[IMAGING_DEVICE_NAME] = "Imaging device name";
 		type[IMAGING_DEVICE_NAME] = BYTE;
 		valLength[IMAGING_DEVICE_NAME] = 10;
@@ -462,12 +428,8 @@ public class ADACDictionary {
 		descriptions[VFR_STRUCT] = "VFR struct";
 		type[VFR_STRUCT] = BYTE;
 		valLength[VFR_STRUCT] = 64;
-	}
 
-	/**
-	 * Populate Multiframe-specific acquisition information
-	 */
-	private void multiframeInfo() {
+		// Populate Multiframe-specific acquisition information
 
 		descriptions[TOTAL_COUNTS_IN_FRAME] = "Frame time (ms)";
 		type[TOTAL_COUNTS_IN_FRAME] = INT; // in ms
@@ -492,12 +454,8 @@ public class ADACDictionary {
 		descriptions[SCALE_FACTOR] = "Scale factor";
 		type[SCALE_FACTOR] = FLOAT;
 		valLength[SCALE_FACTOR] = 4;
-	}
 
-	/**
-	 * Populate Gated-specific acquisition information
-	 */
-	private void gatedInfo() {
+		// Populate Gated-specific acquisition information
 
 		descriptions[R_R_INTERVAL_TIME] = "R-R interval time";
 		type[R_R_INTERVAL_TIME] = SHORT;
@@ -534,12 +492,8 @@ public class ADACDictionary {
 		descriptions[EJECTION_FRACTION] = "Ejection fraction (approx)";
 		type[EJECTION_FRACTION] = FLOAT;
 		valLength[EJECTION_FRACTION] = 4;
-	}
 
-	/**
-	 * Populate SPECT-specific acquisition information
-	 */
-	private void spectInfo() {
+		// Populate SPECT-specific acquisition information
 
 		descriptions[STARTING_ANGLE] = "Starting angle";
 		type[STARTING_ANGLE] = SHORT;
@@ -562,12 +516,8 @@ public class ADACDictionary {
 		descriptions[RECONSTRUCTED_SLICES] = "Reconstructed slices";
 		type[RECONSTRUCTED_SLICES] = SHORT;
 		valLength[RECONSTRUCTED_SLICES] = 2;
-	}
 
-	/**
-	 * Populate Image display information
-	 */
-	private void imageDisplay() {
+		// Populate Image display information
 
 		descriptions[UPPER_WINDOW_GRAY_LEVEL] = "Upper window gray level";
 		type[UPPER_WINDOW_GRAY_LEVEL] = SHORT;
@@ -584,13 +534,8 @@ public class ADACDictionary {
 		descriptions[CUSTOMISED_COLOUR_MAP] = "Customised colour map";
 		type[CUSTOMISED_COLOUR_MAP] = BYTE;
 		valLength[CUSTOMISED_COLOUR_MAP] = 20; // Filename (very short, should
-												// be in same dir)
-	}
 
-	/**
-	 * Populate image processing information
-	 */
-	private void imageProcessing() {
+		// Populate image processing information
 
 		descriptions[MANIPULATED_IMAGE] = "Manipulated image";
 		type[MANIPULATED_IMAGE] = BYTE;
@@ -627,12 +572,8 @@ public class ADACDictionary {
 		descriptions[ATTENUATION_COEFFICIENT] = "Attenuation coefficient";
 		type[ATTENUATION_COEFFICIENT] = FLOAT;
 		valLength[ATTENUATION_COEFFICIENT] = 4;
-	}
 
-	/**
-	 * Populate ADAC EXtras - programme specific information
-	 */
-	private void programSpecificInfo() {
+		// Populate ADAC EXtras - programme specific information
 
 		descriptions[PROGRAM_SPECIFIC] = "Program specific";
 		type[PROGRAM_SPECIFIC] = BYTE;

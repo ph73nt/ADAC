@@ -18,7 +18,6 @@ public class ADACDecoder implements KvpListener {
 	private String directory, fileName;
 	private ByteBuffer keyBuffer;
 	private ByteBuffer valBuffer;
-	private ADACDictionary dict = new ADACDictionary();
 	private BufferedInputStream inputStream;
 	private BufferedInputStream f;
 	private byte[] valHeaders;
@@ -147,7 +146,6 @@ public class ADACDecoder implements KvpListener {
 				// ...the keynum (description)
 				// ...the offset to the value
 				ADACKey key = getKeys();
-				short num = key.getKeyNum();
 				switch (key.getDataType()) {
 
 				case ADACDictionary.BYTE:
@@ -248,11 +246,16 @@ public class ADACDecoder implements KvpListener {
 	private ADACKey getKeys() throws IOException {
 
 		short num = keyBuffer.getShort();
-		byte datTyp = keyBuffer.get();
-		keyBuffer.get(); // unused byte
+		// The next byte is the data type. This explicit declaration
+		// is redundant as we have the information in the dictionary.
+		// Dictionary definition is preferred so that we can override 
+		// special items like "extras".
+		keyBuffer.get();
+		// The next byte is unused by definition
+		keyBuffer.get();
 		short fieldOffset = keyBuffer.getShort();
 
-		return new ADACKey(num, datTyp, fieldOffset);
+		return new ADACKey(num, fieldOffset);
 
 	}
 
@@ -278,7 +281,7 @@ public class ADACDecoder implements KvpListener {
 	public void read(ByteKvp byteKvp) {
 
 		// How long is this byte[]?
-		int len = dict.valLength[byteKvp.getKeyNum()];
+		int len = ADACDictionary.valLength[byteKvp.getKeyNum()];
 		byte[] bytes = new byte[len];
 
 		// Move the value buffer to the correct location
@@ -325,7 +328,7 @@ public class ADACDecoder implements KvpListener {
 		Iterator<ADACKvp> it = keyList.iterator();
 		while(it.hasNext()){
 			ADACKvp ak = it.next();
-			header.append(dict.descriptions[ak.getKeyNum()]);
+			header.append(ADACDictionary.descriptions[ak.getKeyNum()]);
 			header.append(" = ");
 			header.append(ak.getString());
 			header.append("\n");
