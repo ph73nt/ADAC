@@ -147,7 +147,7 @@ public class ADACDecoder implements KvpListener {
 				// ...the keynum (description)
 				// ...the offset to the value
 				ADACKey key = getKeys();
-
+				short num = key.getKeyNum();
 				switch (key.getDataType()) {
 
 				case ADACDictionary.BYTE:
@@ -229,75 +229,17 @@ public class ADACDecoder implements KvpListener {
 
 	private FileInfo parseADACExtras(FileInfo fi) {
 
-		final int INDX_CALB = 0;
+		ADACExtras adacExtras = new ADACExtras(AD_ex_objs);
 
-		// Define ADAC extras that we will parse
-		String[] extras = { "CALB", "WLAA" };
-
-		String anExtra;
-
-		for (int j = 0; j < extras.length; j++) {
-
-			int indxExtra = AD_ex_objs.indexOf(extras[j]);
-			if (indxExtra != -1 && !(extras[j].equals(null))) {
-				Log.log("CALB at " + indxExtra);
-
-				byte[] someBytes;
-				// Check we've got readable ASCII chars - 32 is the first
-				// (space) and 126 is the last (~);
-				int i = 0;
-				do {
-					int index = indxExtra + extras[j].length() + i;
-					anExtra = AD_ex_objs.substring(index, index + 1);
-					someBytes = anExtra.getBytes();
-					Log.log("" + (int) someBytes[0]);
-					i++;
-				} while ((int) someBytes[0] < 32 && (int) someBytes[0] > 126);
-				// We should have skipped any rubbish preamble, like a shift or
-				// STX
-
-				String message = "";
-				boolean continu = false;
-				do {
-					int index = indxExtra + extras[j].length() + i;
-					anExtra = AD_ex_objs.substring(index, index + 1);
-					someBytes = anExtra.getBytes();
-					if ((int) someBytes[0] > 31 && (int) someBytes[0] < 127) {
-						continu = true;
-						message += anExtra;
-					} else {
-						continu = false;
-					}
-					Log.log("" + (int) someBytes[0]);
-					i++;
-				} while (continu);
-
-				// Assuming the object is terminated by a non-printingcharacter,
-				// we have the full "extra." Now use information in some extras:
-				switch (j) {
-				case INDX_CALB:
-					// Calibration factor is size (mm) of a pixel if the image
-					// were scaled to 1024 pixels wide or high
-					double calibF;
-					try {
-						calibF = Float.parseFloat(message);
-						if (calibF != 0) {
-							fi.pixelWidth = calibF * 1024 / xdim;
-							// ADAC only does square pixels
-							fi.pixelHeight = fi.pixelWidth;
-							fi.unit = "mm";
-						}
-					} catch (NumberFormatException e) {
-						Log.log("Unable to parse calibration factor");
-					}
-					break;
-				case 1:
-
-				}
-				Log.log(message);
-				message = "";
-
-			}
+		// Calculate pixel dimensions from the calibration factor.
+		// Calibration factor is the pixel size of a 1024x1024 pixel
+		// image acquired with the full field of view.
+		float cal = adacExtras.getCalibrationFactor();
+		if (cal != 0) {
+			fi.pixelWidth = cal * 1024 / xdim;
+			// ADAC only does square pixels
+			fi.pixelHeight = fi.pixelWidth;
+			fi.unit = "mm";
 		}
 
 		return fi;
