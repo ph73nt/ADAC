@@ -435,10 +435,18 @@ public class ADACDictionary {
 
 		// Populate Multiframe-specific acquisition information
 
-		descriptions[TOTAL_COUNTS_IN_FRAME] = "Frame time (ms)";
+	    ////////////////////////////////////////////////////////////
+	    // Acquisition information - multiframe specific
+	    ////////////////////////////////////////////////////////////
+
+		descriptions[TOTAL_COUNTS_IN_FRAME] = "Total counts in frame";
 		type[TOTAL_COUNTS_IN_FRAME] = INT; // in ms
 		valLength[TOTAL_COUNTS_IN_FRAME] = 4;
 
+		descriptions[FRAME_TIME] = "Frame time (ms)";
+		type[FRAME_TIME] = INT; // in ms
+		valLength[FRAME_TIME] = 4;
+		
 		descriptions[ACQUISITION_TIME] = "Acquisition time (ms)";
 		type[ACQUISITION_TIME] = INT; // in ms
 		valLength[ACQUISITION_TIME] = 4;

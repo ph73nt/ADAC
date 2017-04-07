@@ -27,8 +27,9 @@ public class ADACDecoder implements KvpListener {
 	private final Map<Short, Integer> intsMap;
 	private final Map<Short, Float> floatsMap;
 	private final Map<Short, Integer> bitDepthMap;
+	private Map<String, String> extrasMap = new HashMap<String, String>();
 	private final ArrayList<ADACKvp> keyList;
-	
+
 	public String AD_Type, AD_ex_objs;
 	public int xdim, ydim, bitDepth;
 	public int zdim = 1;
@@ -48,7 +49,7 @@ public class ADACDecoder implements KvpListener {
 		floatsMap = new HashMap<Short, Float>();
 
 		keyList = new ArrayList<ADACKvp>();
-		
+
 		fi = new FileInfo();
 
 		// Bit depth and set the default bit depth
@@ -116,7 +117,7 @@ public class ADACDecoder implements KvpListener {
 		parseHeader();
 		setValues();
 		fi = parseADACExtras(fi);
-		
+
 		return fi;
 
 	}
@@ -167,9 +168,9 @@ public class ADACDecoder implements KvpListener {
 
 					keyList.add(new FloatKvp(this, key));
 					break;
-					
+
 				case ADACDictionary.EXTRAS:
-					
+
 					keyList.add(new ExtrasKvp(this, key));
 					break;
 
@@ -232,19 +233,23 @@ public class ADACDecoder implements KvpListener {
 
 	private FileInfo parseADACExtras(FileInfo fi) {
 
-		ADACExtras adacExtras = new ADACExtras(AD_ex_objs);
-
 		// Calculate pixel dimensions from the calibration factor.
 		// Calibration factor is the pixel size of a 1024x1024 pixel
 		// image acquired with the full field of view.
-		float cal = adacExtras.getCalibrationFactor();
-		if (cal != 0) {
-			fi.pixelWidth = cal * 1024 / xdim;
-			// ADAC only does square pixels
-			fi.pixelHeight = fi.pixelWidth;
-			fi.unit = "mm";
+		try {
+			
+			String calString = extrasMap.get(ExtrasKvp.CALIB_KEY);
+			float cal = Float.parseFloat(calString);
+			if (cal != 0) {
+				fi.pixelWidth = cal * 1024 / xdim;
+				// ADAC only does square pixels
+				fi.pixelHeight = fi.pixelWidth;
+				fi.unit = "mm";
+			}
+		} catch (NumberFormatException e) {
+			Log.log("Unable to parse calibration factor");
 		}
-
+		
 		return fi;
 	}
 
@@ -253,7 +258,7 @@ public class ADACDecoder implements KvpListener {
 		short num = keyBuffer.getShort();
 		// The next byte is the data type. This explicit declaration
 		// is redundant as we have the information in the dictionary.
-		// Dictionary definition is preferred so that we can override 
+		// Dictionary definition is preferred so that we can override
 		// special items like "extras".
 		keyBuffer.get();
 		// The next byte is unused by definition
@@ -325,34 +330,34 @@ public class ADACDecoder implements KvpListener {
 		Log.log(floatKvp.getLogString());
 
 	}
-	
-	public void read(ExtrasKvp extraKvp){
-		
+
+	public void read(ExtrasKvp extraKvp) {
+
 		byte[] bytes = new byte[ExtrasKvp.LENGTH];
 
 		// Move the value buffer to the correct location
 		valBuffer.position(extraKvp.getFieldOffset());
 		valBuffer.get(bytes, 0, ExtrasKvp.LENGTH);
-		
+
 		// Set the bytes string of the extras object
 		extraKvp.setData(bytes);
-		extraKvp.getMap();
-		
+		extrasMap = extraKvp.getMap();
+
 	}
 
 	public Object getImageInfo() {
 
 		StringBuffer header = new StringBuffer();
-		
+
 		Iterator<ADACKvp> it = keyList.iterator();
-		while(it.hasNext()){
+		while (it.hasNext()) {
 			ADACKvp ak = it.next();
 			header.append(ADACDictionary.descriptions[ak.getKeyNum()]);
 			header.append(" = ");
 			header.append(ak.getString());
 			header.append("\n");
 		}
-		
+
 		return header.toString().trim();
 	}
 
