@@ -167,6 +167,11 @@ public class ADACDecoder implements KvpListener {
 
 					keyList.add(new FloatKvp(this, key));
 					break;
+					
+				case ADACDictionary.EXTRAS:
+					
+					keyList.add(new ExtrasKvp(this, key));
+					break;
 
 				}
 
@@ -319,6 +324,20 @@ public class ADACDecoder implements KvpListener {
 		floatsMap.put(floatKvp.getKeyNum(), floatKvp.getValue());
 		Log.log(floatKvp.getLogString());
 
+	}
+	
+	public void read(ExtrasKvp extraKvp){
+		
+		byte[] bytes = new byte[ExtrasKvp.LENGTH];
+
+		// Move the value buffer to the correct location
+		valBuffer.position(extraKvp.getFieldOffset());
+		valBuffer.get(bytes, 0, ExtrasKvp.LENGTH);
+		
+		// Set the bytes string of the extras object
+		extraKvp.setData(bytes);
+		extraKvp.getMap();
+		
 	}
 
 	public Object getImageInfo() {

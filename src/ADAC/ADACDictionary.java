@@ -50,6 +50,10 @@ public class ADACDictionary {
 	 */
 	public static final int VAR = 4;
 	/**
+	 * Additional type to separate Program Specific (or "Extras") objects
+	 */
+	public static final int EXTRAS = 5;
+	/**
 	 * Descriptions of ADAC key-value pairs that appear in the IJ image info
 	 */
 	public final static String[] descriptions;
@@ -576,7 +580,7 @@ public class ADACDictionary {
 		// Populate ADAC EXtras - programme specific information
 
 		descriptions[PROGRAM_SPECIFIC] = "Program specific";
-		type[PROGRAM_SPECIFIC] = BYTE;
+		type[PROGRAM_SPECIFIC] = EXTRAS;
 		valLength[PROGRAM_SPECIFIC] = 800;
 
 	}
