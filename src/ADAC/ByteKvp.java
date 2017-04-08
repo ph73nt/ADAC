@@ -2,7 +2,7 @@ package ADAC;
 
 public class ByteKvp extends ADACKvp {
 	
-	private String value = null;
+	private String value;
 	
 	public ByteKvp(KvpListener listener, ADACKey key){
 	
