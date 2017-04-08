@@ -30,7 +30,6 @@ public class ADACDecoder implements KvpListener {
 	private Map<String, String> extrasMap = new HashMap<String, String>();
 	private final ArrayList<ADACKvp> keyList;
 
-	public String AD_Type, AD_ex_objs;
 	public int xdim, ydim, bitDepth;
 	public int zdim = 1;
 	public int slices = 1;
@@ -70,26 +69,6 @@ public class ADACDecoder implements KvpListener {
 	}
 
 	public FileInfo getFileInfo() throws IOException {
-
-		fi.fileFormat = FileInfo.RAW;
-		fi.fileName = fileName;
-		fi.intelByteOrder = false;
-
-		if (directory.indexOf("://") > 0) { // is URL
-
-			URL u = new URL(directory + fileName);
-			inputStream = new BufferedInputStream(u.openStream());
-			fi.inputStream = inputStream;
-
-		} else if (inputStream != null) {
-
-			fi.inputStream = inputStream;
-
-		} else {
-
-			fi.directory = directory;
-
-		}
 
 		if (inputStream != null) {
 			f = inputStream;
@@ -185,10 +164,6 @@ public class ADACDecoder implements KvpListener {
 
 	private void setValues() {
 
-		// Strings
-		AD_ex_objs = stringsMap.get(ADACDictionary.PROGRAM_SPECIFIC);
-		AD_Type = stringsMap.get(ADACDictionary.DATA_TYPE);
-
 		// Shorts
 		fi.width = shortsMap.get(ADACDictionary.X_DIMENSIONS);
 		fi.height = shortsMap.get(ADACDictionary.Y_DIMENSIONS);
@@ -271,6 +246,8 @@ public class ADACDecoder implements KvpListener {
 
 	public boolean isGated() {
 
+		String AD_Type = stringsMap.get(ADACDictionary.DATA_TYPE);
+		
 		if (AD_Type == null) {
 
 			return false;
