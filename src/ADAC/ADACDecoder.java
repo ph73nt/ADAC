@@ -67,8 +67,7 @@ public class ADACDecoder {
 		if (inputStream != null) {
 			f = inputStream;
 		} else {
-			f = new BufferedInputStream(new FileInputStream(directory
-					+ fileName));
+			f = new BufferedInputStream(new FileInputStream(directory + fileName));
 		}
 
 		Log.log("\nADACDecoder: decoding " + fileName);
@@ -77,8 +76,7 @@ public class ADACDecoder {
 		byte[] bytHeader = new byte[ADACDictionary.LABEL_OFFSET];
 		valHeaders = new byte[ADACDictionary.IM_OFFSET];
 		f.read(bytHeader, 0, bytHeader.length);
-		f.read(valHeaders, ADACDictionary.LABEL_OFFSET, valHeaders.length
-				- ADACDictionary.LABEL_OFFSET);
+		f.read(valHeaders, ADACDictionary.LABEL_OFFSET, valHeaders.length - ADACDictionary.LABEL_OFFSET);
 
 		if (fi.intelByteOrder) {
 			keyBuffer.order(ByteOrder.LITTLE_ENDIAN);
@@ -109,12 +107,21 @@ public class ADACDecoder {
 				// Must have a gated reconstruction, which has some number
 				// (usually 16) intervals per reconstructed slice
 				fi.nImages = zdim * slices * intervals;
-				fi.offset = ADACDictionary.IM_OFFSET;
+
+				// For each gated interval there is an extra 128 byte header
+				// (beginning "adac01") block starting at the normal image
+				// offset location. Add this to the offset:
+				fi.offset = ADACDictionary.IM_OFFSET + intervals * 128;
+				
 			} else {
 				// Gated SPECT data set, which has some number (usually 16)
-				// intervals per azimuthal projection
+				// intervals per azimuthal projection.
 				fi.nImages = zdim * intervals;
-				fi.offset = ADACDictionary.GATED_SPECT_OFFSET;
+
+				// For each azimuth there is an additional 1696 byte header
+				// (beginning "adac01") at the normal image offset location. Add
+				// this to the image offset.
+				fi.offset = ADACDictionary.IM_OFFSET + intervals * 1696;
 			}
 
 		} else {
@@ -123,6 +130,7 @@ public class ADACDecoder {
 			fi.offset = ADACDictionary.IM_OFFSET;
 		}
 
+		Log.log("Image offset: " + fi.offset);
 		fi = parseADACExtras(fi);
 
 		return fi;
@@ -282,11 +290,9 @@ public class ADACDecoder {
 
 				}
 
-				hdr += dict.descriptions[keynum] + " = " + values[keynum]
-						+ "\n";
+				hdr += dict.descriptions[keynum] + " = " + values[keynum] + "\n";
 
-				Log.log(keynum + ", " + key.getDataType() + ", " + fieldOffset
-						+ ", " + values[keynum]);
+				Log.log(keynum + ", " + key.getDataType() + ", " + fieldOffset + ", " + values[keynum]);
 
 			}
 
@@ -295,9 +301,7 @@ public class ADACDecoder {
 			return hdr;
 
 		} catch (IOException e) {
-			Log.error("ADAC Decoder",
-					"Failed to retrieve ADAC image file header. "
-							+ "Is this an ADAC image file?");
+			Log.error("ADAC Decoder", "Failed to retrieve ADAC image file header. " + "Is this an ADAC image file?");
 			return null;
 		}
 	}
@@ -388,8 +392,8 @@ public class ADACDecoder {
 		return new ADACKey(num, datTyp, fieldOffset);
 
 	}
-	
-	public boolean isGated(){
+
+	public boolean isGated() {
 		return isGated;
 	}
 
