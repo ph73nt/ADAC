@@ -118,10 +118,11 @@ public class ADACDecoder {
 				// intervals per azimuthal projection.
 				fi.nImages = zdim * intervals;
 
-				// For each azimuth there is an additional 1696 byte header
+				// For each azimuth there is an additional 1664 byte header
 				// (beginning "adac01") at the normal image offset location. Add
 				// this to the image offset.
-				fi.offset = ADACDictionary.IM_OFFSET + intervals * 1696;
+				fi.offset = ADACDictionary.IM_OFFSET + intervals * 1664;
+				
 			}
 
 		} else {
