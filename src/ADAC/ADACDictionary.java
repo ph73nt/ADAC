@@ -18,13 +18,6 @@ public class ADACDictionary {
 	 */
 	public static final int IM_OFFSET = 2048;
 	/**
-	 * The normal image offset of 2048 bytes does not seem to apply to gated
-	 * data sets. There must be some extra data, possibly pertaining to recorded
-	 * beats held here for 106496 bytes. This takes up exactly 26 frames of
-	 * 64x64x8.
-	 */
-	public static final int GATED_SPECT_OFFSET = 108544;
-	/**
 	 * The maximum number of keys stored in an ADAC image object
 	 */
 	public static final int NUM_KEYS = 114;
