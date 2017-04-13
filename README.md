@@ -7,6 +7,6 @@ To get going straight away, download the ADAC_Utils.jar binary file and place in
     * Export ADAC Image
     * Import ADAC Image
 
-I guess most folks will be using the importer. Currently work very well for static, dynamic and SPECT images. No support as yet for gated intervals.
+Most folks will be using the importer. Currently work very well for static all image types I have tried: planar, dynamic, SPECT and gated.
 
 The export works well for planars, but development has stalled on the export function due to lack of requirement since most ADAC systems support either or both Interfile or DICOM.
