@@ -60,130 +60,130 @@ public class ADACDictionary {
 	// //////////////////////////////////////////////////////////
 	// Patient demographics
 	// //////////////////////////////////////////////////////////
-	public static final int PATIENT_NAME = 1;
-	public static final int PATIENT_ID = 2;
-	public static final int PATIENT_SEX = 3;
-	public static final int PATIENT_AGE = 4;
-	public static final int PATIENT_HEIGHT = 5; 
-	public static final int PATIENT_WEIGHT = 6;
-	public static final int UNIQUE_PATIENT_KEY = 76;	
-	public static final int DATE_OF_BIRTH = 109;
+	public static final short PATIENT_NAME = 1;
+	public static final short PATIENT_ID = 2;
+	public static final short PATIENT_SEX = 3;
+	public static final short PATIENT_AGE = 4;
+	public static final short PATIENT_HEIGHT = 5; 
+	public static final short PATIENT_WEIGHT = 6;
+	public static final short UNIQUE_PATIENT_KEY = 76;	
+	public static final short DATE_OF_BIRTH = 109;
 
 	// //////////////////////////////////////////////////////////
 	// Exam information
 	// //////////////////////////////////////////////////////////
-	public static final int ACQUISITION_DATE = 7;
-	public static final int DOSE_ADMIN_TIME = 8;
-	public static final int UNIQUE_EXAM_KEY = 9;
-	public static final int EXAM_PROCEDURE = 10;
-	public static final int REFFERING_PHYSICIAN = 11;
-	public static final int ATTENDING_PHYSICIAN = 12;
-	public static final int IMAGING_MODALITY = 13;
-	public static final int INSTITUTION_NAME = 14;
-	public static final int NRML_CRV_FILE_NAME = 82;
-	public static final int HISTOG_CRV_FILE_NAME = 15;
-	public static final int ACQUISITION_START_TIME = 16;
+	public static final short ACQUISITION_DATE = 7;
+	public static final short DOSE_ADMIN_TIME = 8;
+	public static final short UNIQUE_EXAM_KEY = 9;
+	public static final short EXAM_PROCEDURE = 10;
+	public static final short REFFERING_PHYSICIAN = 11;
+	public static final short ATTENDING_PHYSICIAN = 12;
+	public static final short IMAGING_MODALITY = 13;
+	public static final short INSTITUTION_NAME = 14;
+	public static final short NRML_CRV_FILE_NAME = 82;
+	public static final short HISTOG_CRV_FILE_NAME = 15;
+	public static final short ACQUISITION_START_TIME = 16;
 
 	// //////////////////////////////////////////////////////////
 	// Relational information
 	// //////////////////////////////////////////////////////////
-	public static final int DATA_TYPE = 17;
-	public static final int IMAGE_VIEW_ID = 18;
-	public static final int UNIQUE_OBJECT_KEY = 83;
-	public static final int ASSOCIATED_PARENT_FILE = 75;
+	public static final short DATA_TYPE = 17;
+	public static final short IMAGE_VIEW_ID = 18;
+	public static final short UNIQUE_OBJECT_KEY = 83;
+	public static final short ASSOCIATED_PARENT_FILE = 75;
 
 	// //////////////////////////////////////////////////////////
 	// Acquisition information - general
 	// //////////////////////////////////////////////////////////
-	public static final int IMAGING_DEVICE_NAME = 19;
-	public static final int DEVICE_SERIAL_NUMBER = 20;
-	public static final int COLLIMATOR_USED = 21;
-	public static final int SOFTWARE_VERSION_NUMBER = 22;
-	public static final int RADIOPHARMACEUTICAL_1 = 23;
-	public static final int DOSAGE_1 = 24;
-	public static final int RADIOPHARMACEUTICAL_2 = 25;
-	public static final int DOSAGE_2 = 26;
-	public static final int ISOTOPE_IMAGING_MODE = 27;
-	public static final int ENERGY_WINDOW_1_CENTER = 28;
-	public static final int ENERGY_WINDOW_1_WIDTH = 29;
-	public static final int ENERGY_WINDOW_2_CENTER = 30;
-	public static final int ENERGY_WINDOW_2_WIDTH = 31;
-	public static final int ENERGY_WINDOW_3_CENTER = 32;
-	public static final int ENERGY_WINDOW_3_WIDTH = 33;
-	public static final int ENERGY_WINDOW_4_CENTER = 34;
-	public static final int ENERGY_WINDOW_4_WIDTH = 35;
-	public static final int PATIENT_ORIENTATION = 36;
-	public static final int DIRECTIONAL_ORIENTATION = 110;
-	public static final int SPATIAL_RESOLUTION = 37;
-	public static final int SLICE_THICKNESS = 38;
-	public static final int X_DIMENSIONS = 39;
-	public static final int Y_DIMENSIONS = 40;
-	public static final int Z_DIMENSIONS = 41;
-	public static final int NUMBER_OF_IMAGE_SETS = 86;
-	public static final int PIXEL_BIT_DEPTH = 42;
-	public static final int TRUE_COLOUR_FLAG = 85;
-	public static final int UNIFORMITY_CORRECTION = 43;
-	public static final int ZOOM = 44;
-	public static final int VFR_STRUCT = 111;
+	public static final short IMAGING_DEVICE_NAME = 19;
+	public static final short DEVICE_SERIAL_NUMBER = 20;
+	public static final short COLLIMATOR_USED = 21;
+	public static final short SOFTWARE_VERSION_NUMBER = 22;
+	public static final short RADIOPHARMACEUTICAL_1 = 23;
+	public static final short DOSAGE_1 = 24;
+	public static final short RADIOPHARMACEUTICAL_2 = 25;
+	public static final short DOSAGE_2 = 26;
+	public static final short ISOTOPE_IMAGING_MODE = 27;
+	public static final short ENERGY_WINDOW_1_CENTER = 28;
+	public static final short ENERGY_WINDOW_1_WIDTH = 29;
+	public static final short ENERGY_WINDOW_2_CENTER = 30;
+	public static final short ENERGY_WINDOW_2_WIDTH = 31;
+	public static final short ENERGY_WINDOW_3_CENTER = 32;
+	public static final short ENERGY_WINDOW_3_WIDTH = 33;
+	public static final short ENERGY_WINDOW_4_CENTER = 34;
+	public static final short ENERGY_WINDOW_4_WIDTH = 35;
+	public static final short PATIENT_ORIENTATION = 36;
+	public static final short DIRECTIONAL_ORIENTATION = 110;
+	public static final short SPATIAL_RESOLUTION = 37;
+	public static final short SLICE_THICKNESS = 38;
+	public static final short X_DIMENSIONS = 39;
+	public static final short Y_DIMENSIONS = 40;
+	public static final short Z_DIMENSIONS = 41;
+	public static final short NUMBER_OF_IMAGE_SETS = 86;
+	public static final short PIXEL_BIT_DEPTH = 42;
+	public static final short TRUE_COLOUR_FLAG = 85;
+	public static final short UNIFORMITY_CORRECTION = 43;
+	public static final short ZOOM = 44;
+	public static final short VFR_STRUCT = 111;
 
 	// //////////////////////////////////////////////////////////
 	// Acquisition information - multiframe specific
 	// //////////////////////////////////////////////////////////
-	public static final int TOTAL_COUNTS_IN_FRAME = 45;
-	public static final int FRAME_TIME = 46;
-	public static final int ACQUISITION_TIME = 47;
-	public static final int UNUSED = 84;
-	public static final int MAX_VALUE_IN_SET = 48;
-	public static final int MIN_VALUE_IN_SET = 49;
-	public static final int SCALE_FACTOR = 87;
+	public static final short TOTAL_COUNTS_IN_FRAME = 45;
+	public static final short FRAME_TIME = 46;
+	public static final short ACQUISITION_TIME = 47;
+	public static final short UNUSED = 84;
+	public static final short MAX_VALUE_IN_SET = 48;
+	public static final short MIN_VALUE_IN_SET = 49;
+	public static final short SCALE_FACTOR = 87;
 
 	// //////////////////////////////////////////////////////////
 	// Acquisition information - gated specific
 	// //////////////////////////////////////////////////////////
-	public static final int R_R_INTERVAL_TIME = 50;
-	public static final int R_R_LOW_TOLERANCE_TIME = 112;
-	public static final int R_R_HIGH_TOLERANCE_TIME = 113;
-	public static final int CYCLES_IMAGED_PC = 51;
-	public static final int CYCLES_ACCEPTED_PC = 52;
-	public static final int CYCLES_REJECTED_PC = 53;
-	public static final int END_DIASTOLIC_FRAME = 54;
-	public static final int END_SYSTOLIC_FRAME = 55;
-	public static final int EJECTION_FRACTION = 56;
+	public static final short R_R_INTERVAL_TIME = 50;
+	public static final short R_R_LOW_TOLERANCE_TIME = 112;
+	public static final short R_R_HIGH_TOLERANCE_TIME = 113;
+	public static final short CYCLES_IMAGED_PC = 51;
+	public static final short CYCLES_ACCEPTED_PC = 52;
+	public static final short CYCLES_REJECTED_PC = 53;
+	public static final short END_DIASTOLIC_FRAME = 54;
+	public static final short END_SYSTOLIC_FRAME = 55;
+	public static final short EJECTION_FRACTION = 56;
 
 	// //////////////////////////////////////////////////////////
 	// Acquisition information - SPECT specific
 	// //////////////////////////////////////////////////////////
-	public static final int STARTING_ANGLE = 57;
-	public static final int DEGREES_OF_ROTATION = 58;
-	public static final int DIRECTION_OF_ROTATION = 59;
-	public static final int REORIENTATION_TYPE = 60;
-	public static final int RECONSTRUCTED_SLICES = 61;
+	public static final short STARTING_ANGLE = 57;
+	public static final short DEGREES_OF_ROTATION = 58;
+	public static final short DIRECTION_OF_ROTATION = 59;
+	public static final short REORIENTATION_TYPE = 60;
+	public static final short RECONSTRUCTED_SLICES = 61;
 
 	// //////////////////////////////////////////////////////////
 	// Image display information
 	// //////////////////////////////////////////////////////////
-	public static final int UPPER_WINDOW_GRAY_LEVEL = 62;
-	public static final int LOWER_LEVEL_GRAY_LEVEL = 63;
-	public static final int ASSOCIATED_COLOUR_MAP = 64;
-	public static final int CUSTOMISED_COLOUR_MAP = 65;
+	public static final short UPPER_WINDOW_GRAY_LEVEL = 62;
+	public static final short LOWER_LEVEL_GRAY_LEVEL = 63;
+	public static final short ASSOCIATED_COLOUR_MAP = 64;
+	public static final short CUSTOMISED_COLOUR_MAP = 65;
 
 	// //////////////////////////////////////////////////////////
 	// Image processing information
 	// //////////////////////////////////////////////////////////
-	public static final int MANIPULATED_IMAGE = 66;
-	public static final int AXIS_OF_ROTATION_CORR = 67;
-	public static final int REORIENTATION_AZIMUTH = 68;
-	public static final int REORIENTATION_ELEVATION = 69;
-	public static final int FILTER_TYPE = 70;
-	public static final int FILTER_ORDER = 71;
-	public static final int CUTOFF_FREQUENCY = 72;
-	public static final int RECONSTRUCTION_TYPE = 73;
-	public static final int ATTENUATION_COEFFICIENT = 74;
+	public static final short MANIPULATED_IMAGE = 66;
+	public static final short AXIS_OF_ROTATION_CORR = 67;
+	public static final short REORIENTATION_AZIMUTH = 68;
+	public static final short REORIENTATION_ELEVATION = 69;
+	public static final short FILTER_TYPE = 70;
+	public static final short FILTER_ORDER = 71;
+	public static final short CUTOFF_FREQUENCY = 72;
+	public static final short RECONSTRUCTION_TYPE = 73;
+	public static final short ATTENUATION_COEFFICIENT = 74;
 	
 	// //////////////////////////////////////////////////////////
 	// Program specific and "extra" object information
 	// //////////////////////////////////////////////////////////
-	public static final int PROGRAM_SPECIFIC = 114;	
+	public static final short PROGRAM_SPECIFIC = 114;	
 	
 	/**
 	 * Populates the ADAC key-value pairs information. There are arrays for KVP
