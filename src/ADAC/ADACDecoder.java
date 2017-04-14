@@ -14,27 +14,27 @@ import ij.io.FileInfo;
 
 public class ADACDecoder implements KvpListener {
 
-	private String directory, fileName;
-	private ByteBuffer keyBuffer;
-	private ByteBuffer valBuffer;
-	private BufferedInputStream inputStream;
-	private BufferedInputStream f;
-	private byte[] valHeaders;
-
-	private final Map<Short, String> stringsMap;
-	private final Map<Short, Short> shortsMap;
-	private final Map<Short, Integer> intsMap;
-	private final Map<Short, Float> floatsMap;
 	private final Map<Short, Integer> bitDepthMap;
+	private String directory, fileName;
 	private Map<String, String> extrasMap = new HashMap<String, String>();
-	private final ArrayList<ADACKvp> keyList;
+	private BufferedInputStream f;
+	private FileInfo fi;
+	private final Map<Short, Float> floatsMap;
 
+	private BufferedInputStream inputStream;
+	public int intervals = 1;
+	private final Map<Short, Integer> intsMap;
+	private ByteBuffer keyBuffer;
+	private final ArrayList<ADACKvp> keyList;
+	private final Map<Short, Short> shortsMap;
+	public double slice_t, frameTime;
+
+	public int slices = 1;
+	private final Map<Short, String> stringsMap;
+	private ByteBuffer valBuffer;
+	private byte[] valHeaders;
 	public int xdim, ydim, bitDepth;
 	public int zdim = 1;
-	public int slices = 1;
-	public int intervals = 1;
-	public double slice_t, frameTime;
-	private FileInfo fi;
 
 	public ADACDecoder(String directory, String fileName) {
 
@@ -57,14 +57,6 @@ public class ADACDecoder implements KvpListener {
 		bitDepthMap.put((short) 16, FileInfo.GRAY16_SIGNED);
 		bitDepthMap.put((short) 32, FileInfo.GRAY32_FLOAT);
 
-	}
-
-	public BufferedInputStream getInputStream() {
-		return inputStream;
-	}
-
-	public void setInputStream(BufferedInputStream bis) {
-		inputStream = bis;
 	}
 
 	public FileInfo getFileInfo() throws IOException {
@@ -98,6 +90,85 @@ public class ADACDecoder implements KvpListener {
 
 		return fi;
 
+	}
+
+	public Object getImageInfo() {
+
+		StringBuffer header = new StringBuffer();
+
+		Iterator<ADACKvp> it = keyList.iterator();
+		while (it.hasNext()) {
+			ADACKvp ak = it.next();
+			header.append(ADACDictionary.descriptions[ak.getKeyNum()]);
+			header.append(" = ");
+			header.append(ak.getString());
+			header.append("\n");
+		}
+
+		return header.toString().trim();
+	}
+
+	public BufferedInputStream getInputStream() {
+		return inputStream;
+	}
+
+	private ADACKey getKeys() throws IOException {
+
+		short num = keyBuffer.getShort();
+		// The next byte is the data type. This explicit declaration
+		// is redundant as we have the information in the dictionary.
+		// Dictionary definition is preferred so that we can override
+		// special items like "extras".
+		keyBuffer.get();
+		// The next byte is unused by definition
+		keyBuffer.get();
+		short fieldOffset = keyBuffer.getShort();
+
+		return new ADACKey(num, fieldOffset);
+
+	}
+
+	public boolean isGated() {
+
+		String AD_Type = stringsMap.get(ADACDictionary.DATA_TYPE);
+		
+		if (AD_Type == null) {
+
+			return false;
+
+		} else if (AD_Type.equals("GE") || AD_Type.equals("GP")) {
+
+			// GE - Gated ECT
+			// GP - Gated planar (although these usually just get given DP)
+			return true;
+
+		} else {
+
+			return false;
+		}
+
+	}
+
+	private FileInfo parseADACExtras(FileInfo fi) {
+
+		// Calculate pixel dimensions from the calibration factor.
+		// Calibration factor is the pixel size of a 1024x1024 pixel
+		// image acquired with the full field of view.
+		try {
+			
+			String calString = extrasMap.get(ExtrasKvp.CALIB_KEY);
+			float cal = Float.parseFloat(calString);
+			if (cal != 0) {
+				fi.pixelWidth = cal * 1024 / xdim;
+				// ADAC only does square pixels
+				fi.pixelHeight = fi.pixelWidth;
+				fi.unit = "mm";
+			}
+		} catch (NumberFormatException e) {
+			Log.log("Unable to parse calibration factor");
+		}
+		
+		return fi;
 	}
 
 	private void parseHeader() throws IOException {
@@ -161,6 +232,67 @@ public class ADACDecoder implements KvpListener {
 		}
 	}
 
+	public void read(ByteKvp byteKvp) {
+
+		// How long is this byte[]?
+		int len = ADACDictionary.valLength[byteKvp.getKeyNum()];
+		byte[] bytes = new byte[len];
+
+		// Move the value buffer to the correct location
+		valBuffer.position(byteKvp.getFieldOffset());
+		valBuffer.get(bytes, 0, len);
+		byteKvp.setString(bytes);
+
+		stringsMap.put(byteKvp.getKeyNum(), byteKvp.getString());
+		Log.log(byteKvp.getLogString());
+
+	}
+
+	public void read(ExtrasKvp extraKvp) {
+
+		byte[] bytes = new byte[ExtrasKvp.LENGTH];
+
+		// Move the value buffer to the correct location
+		valBuffer.position(extraKvp.getFieldOffset());
+		valBuffer.get(bytes, 0, ExtrasKvp.LENGTH);
+
+		// Set the bytes string of the extras object
+		extraKvp.setData(bytes);
+		extrasMap = extraKvp.getMap();
+
+	}
+
+	public void read(FloatKvp floatKvp) {
+
+		float floatValue = valBuffer.getFloat(floatKvp.getFieldOffset());
+		floatKvp.setValue(floatValue);
+		floatsMap.put(floatKvp.getKeyNum(), floatKvp.getValue());
+		Log.log(floatKvp.getLogString());
+
+	}
+
+	public void read(IntKvp intKvp) {
+
+		int m_Int = valBuffer.getInt(intKvp.getFieldOffset());
+		intKvp.setValue(m_Int);
+		intsMap.put(intKvp.getKeyNum(), intKvp.getValue());
+		Log.log(intKvp.getLogString());
+
+	}
+
+	public void read(ShortKvp shortKvp) {
+
+		short shortValue = valBuffer.getShort(shortKvp.getFieldOffset());
+		shortKvp.setValue(shortValue);
+		shortsMap.put(shortKvp.getKeyNum(), shortKvp.getValue());
+		Log.log(shortKvp.getLogString());
+
+	}
+
+	public void setInputStream(BufferedInputStream bis) {
+		inputStream = bis;
+	}
+
 	private void setValues() {
 
 		// Shorts
@@ -216,138 +348,6 @@ public class ADACDecoder implements KvpListener {
 			fi.offset = ADACDictionary.IM_OFFSET;
 		}
 
-	}
-
-	private FileInfo parseADACExtras(FileInfo fi) {
-
-		// Calculate pixel dimensions from the calibration factor.
-		// Calibration factor is the pixel size of a 1024x1024 pixel
-		// image acquired with the full field of view.
-		try {
-			
-			String calString = extrasMap.get(ExtrasKvp.CALIB_KEY);
-			float cal = Float.parseFloat(calString);
-			if (cal != 0) {
-				fi.pixelWidth = cal * 1024 / xdim;
-				// ADAC only does square pixels
-				fi.pixelHeight = fi.pixelWidth;
-				fi.unit = "mm";
-			}
-		} catch (NumberFormatException e) {
-			Log.log("Unable to parse calibration factor");
-		}
-		
-		return fi;
-	}
-
-	private ADACKey getKeys() throws IOException {
-
-		short num = keyBuffer.getShort();
-		// The next byte is the data type. This explicit declaration
-		// is redundant as we have the information in the dictionary.
-		// Dictionary definition is preferred so that we can override
-		// special items like "extras".
-		keyBuffer.get();
-		// The next byte is unused by definition
-		keyBuffer.get();
-		short fieldOffset = keyBuffer.getShort();
-
-		return new ADACKey(num, fieldOffset);
-
-	}
-
-	public boolean isGated() {
-
-		String AD_Type = stringsMap.get(ADACDictionary.DATA_TYPE);
-		
-		if (AD_Type == null) {
-
-			return false;
-
-		} else if (AD_Type.equals("GE") || AD_Type.equals("GP")) {
-
-			// GE - Gated ECT
-			// GP - Gated planar (although these usually just get given DP)
-			return true;
-
-		} else {
-
-			return false;
-		}
-
-	}
-
-	public void read(ByteKvp byteKvp) {
-
-		// How long is this byte[]?
-		int len = ADACDictionary.valLength[byteKvp.getKeyNum()];
-		byte[] bytes = new byte[len];
-
-		// Move the value buffer to the correct location
-		valBuffer.position(byteKvp.getFieldOffset());
-		valBuffer.get(bytes, 0, len);
-		byteKvp.setString(bytes);
-
-		stringsMap.put(byteKvp.getKeyNum(), byteKvp.getString());
-		Log.log(byteKvp.getLogString());
-
-	}
-
-	public void read(ShortKvp shortKvp) {
-
-		short shortValue = valBuffer.getShort(shortKvp.getFieldOffset());
-		shortKvp.setValue(shortValue);
-		shortsMap.put(shortKvp.getKeyNum(), shortKvp.getValue());
-		Log.log(shortKvp.getLogString());
-
-	}
-
-	public void read(IntKvp intKvp) {
-
-		int m_Int = valBuffer.getInt(intKvp.getFieldOffset());
-		intKvp.setValue(m_Int);
-		intsMap.put(intKvp.getKeyNum(), intKvp.getValue());
-		Log.log(intKvp.getLogString());
-
-	}
-
-	public void read(FloatKvp floatKvp) {
-
-		float floatValue = valBuffer.getFloat(floatKvp.getFieldOffset());
-		floatKvp.setValue(floatValue);
-		floatsMap.put(floatKvp.getKeyNum(), floatKvp.getValue());
-		Log.log(floatKvp.getLogString());
-
-	}
-
-	public void read(ExtrasKvp extraKvp) {
-
-		byte[] bytes = new byte[ExtrasKvp.LENGTH];
-
-		// Move the value buffer to the correct location
-		valBuffer.position(extraKvp.getFieldOffset());
-		valBuffer.get(bytes, 0, ExtrasKvp.LENGTH);
-
-		// Set the bytes string of the extras object
-		extraKvp.setData(bytes);
-		extrasMap = extraKvp.getMap();
-
-	}
-
-	public Object getImageInfo() {
-
-		StringBuffer header = new StringBuffer();
-
-		Iterator<ADACKvp> it = keyList.iterator();
-		while (it.hasNext()) {
-			ADACKvp ak = it.next();
-			header.append(ADACDictionary.descriptions[ak.getKeyNum()]);
-			header.append(" = ");
-			header.append(ak.getString());
-			header.append("\n");
-		}
-
-		return header.toString().trim();
 	}
 
 }
