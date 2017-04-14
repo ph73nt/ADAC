@@ -1,15 +1,15 @@
 package ADAC;
 
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+
 import ij.IJ;
 import ij.ImagePlus;
 import ij.io.FileInfo;
 import ij.io.FileOpener;
 import ij.io.OpenDialog;
 import ij.plugin.PlugIn;
-
-import java.io.BufferedInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 
 /**
  *
@@ -85,7 +85,7 @@ public class Import_ADAC_image extends ImagePlus implements PlugIn {
 
 			setCalibration(imp.getCalibration());
 
-			setProperty("Info", ad.header);// getHeader());
+			setProperty("Info", ad.getImageInfo());// getHeader());
 
 			setFileInfo(fi); // needed for revert
 
