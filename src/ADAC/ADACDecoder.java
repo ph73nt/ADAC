@@ -176,6 +176,7 @@ public class ADACDecoder implements KvpListener {
 		// Ints
 		// Convert from milliseconds to seconds
 		fi.frameInterval = intsMap.get(ADACDictionary.FRAME_TIME) / 1000;
+		Log.log("Image offset: " + fi.offset);
 
 		// Gated or non-gated
 		if (isGated()) {
@@ -184,17 +185,29 @@ public class ADACDecoder implements KvpListener {
 			// - Gated SPECT projections
 			// - Gated reconstruction
 			// - Gated planar (although all examples of these I have seen just
-			// use the dynamic planar (DP) data type)
+			// use the dynamic planar (DP) data type)			
 			if (slices > 0) {
+
 				// Must have a gated reconstruction, which has some number
 				// (usually 16) intervals per reconstructed slice
 				fi.nImages = zdim * slices * intervals;
-				fi.offset = ADACDictionary.IM_OFFSET;
-			} else {
-				// Gated SPECT projections, which has some number (usually 16)
-				// intervals per azimuthal projection
-				fi.nImages = zdim * intervals;
-				fi.offset = ADACDictionary.IM_OFFSET;
+
+				// For each gated interval there is an extra 128 byte header
+				// (beginning "adac01") block starting at the normal image
+				// offset location. Add this to the offset:
+				fi.offset = ADACDictionary.IM_OFFSET + intervals * 128;
+
+				} else {
+	
+					// Gated SPECT data set, which has some number (usually 16)
+					// intervals per azimuthal projection.
+					fi.nImages = zdim * intervals;
+
+					// For each azimuth there is an additional 1664 byte header
+					// (beginning "adac01") at the normal image offset location. Add
+					// this to the image offset.
+					fi.offset = ADACDictionary.IM_OFFSET + intervals * 1664;
+					
 			}
 
 		} else {
