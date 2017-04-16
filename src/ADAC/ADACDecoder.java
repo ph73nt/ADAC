@@ -114,24 +114,35 @@ public class ADACDecoder implements KvpListener {
 
 	private ADACKey getKeys() throws IOException {
 
+		// Get the key number for cross-referencing with the dictionary
 		short num = keyBuffer.getShort();
+
 		// The next byte is the data type. This explicit declaration
 		// is redundant as we have the information in the dictionary.
 		// Dictionary definition is preferred so that we can override
 		// special items like "extras".
 		keyBuffer.get();
+
 		// The next byte is unused by definition
 		keyBuffer.get();
+
+		// Get the offset in bytes to the field value
 		short fieldOffset = keyBuffer.getShort();
 
 		return new ADACKey(num, fieldOffset);
 
 	}
 
+	/**
+	 * Gated data types will often require a 4D presentation.
+	 * 
+	 * @return True if the image type is gated, regardless of being tomographic
+	 *         or planar.
+	 */
 	public boolean isGated() {
 
 		String AD_Type = stringsMap.get(ADACDictionary.DATA_TYPE);
-		
+
 		if (AD_Type == null) {
 
 			return false;
@@ -149,13 +160,19 @@ public class ADACDecoder implements KvpListener {
 
 	}
 
+	/**
+	 * Parse the Program Specific key/value pair for "extra" information.
+	 * 
+	 * @param fi
+	 * @return
+	 */
 	private FileInfo parseADACExtras(FileInfo fi) {
 
 		// Calculate pixel dimensions from the calibration factor.
 		// Calibration factor is the pixel size of a 1024x1024 pixel
 		// image acquired with the full field of view.
 		try {
-			
+
 			String calString = extrasMap.get(ExtrasKvp.CALIB_KEY);
 			float cal = Float.parseFloat(calString);
 			if (cal != 0) {
@@ -167,10 +184,15 @@ public class ADACDecoder implements KvpListener {
 		} catch (NumberFormatException e) {
 			Log.log("Unable to parse calibration factor");
 		}
-		
+
 		return fi;
 	}
 
+	/**
+	 * Parse the header information for key-value pairs.
+	 * 
+	 * @throws IOException
+	 */
 	private void parseHeader() throws IOException {
 
 		// ////////////////////////////////////////////////////////////
@@ -232,6 +254,9 @@ public class ADACDecoder implements KvpListener {
 		}
 	}
 
+	/**
+	 * Read a byte key-value pair.
+	 */
 	public void read(ByteKvp byteKvp) {
 
 		// How long is this byte[]?
@@ -248,6 +273,9 @@ public class ADACDecoder implements KvpListener {
 
 	}
 
+	/**
+	 * Read the "extra" key-value pair.
+	 */
 	public void read(ExtrasKvp extraKvp) {
 
 		byte[] bytes = new byte[ExtrasKvp.LENGTH];
@@ -262,6 +290,9 @@ public class ADACDecoder implements KvpListener {
 
 	}
 
+	/**
+	 * Read a floating point key-value pair.
+	 */
 	public void read(FloatKvp floatKvp) {
 
 		float floatValue = valBuffer.getFloat(floatKvp.getFieldOffset());
@@ -271,6 +302,9 @@ public class ADACDecoder implements KvpListener {
 
 	}
 
+	/**
+	 * Read an integer key-value pair.
+	 */
 	public void read(IntKvp intKvp) {
 
 		int m_Int = valBuffer.getInt(intKvp.getFieldOffset());
@@ -280,6 +314,9 @@ public class ADACDecoder implements KvpListener {
 
 	}
 
+	/**
+	 * Read a short integer key-value pair.
+	 */
 	public void read(ShortKvp shortKvp) {
 
 		short shortValue = valBuffer.getShort(shortKvp.getFieldOffset());
@@ -289,6 +326,10 @@ public class ADACDecoder implements KvpListener {
 
 	}
 
+	/**
+	 * Set the buffered inputstream object containing the data.
+	 * @param bis
+	 */
 	public void setInputStream(BufferedInputStream bis) {
 		inputStream = bis;
 	}
@@ -317,7 +358,7 @@ public class ADACDecoder implements KvpListener {
 			// - Gated SPECT projections
 			// - Gated reconstruction
 			// - Gated planar (although all examples of these I have seen just
-			// use the dynamic planar (DP) data type)			
+			// use the dynamic planar (DP) data type)
 			if (slices > 0) {
 
 				// Must have a gated reconstruction, which has some number
@@ -329,17 +370,17 @@ public class ADACDecoder implements KvpListener {
 				// offset location. Add this to the offset:
 				fi.offset = ADACDictionary.IM_OFFSET + intervals * 128;
 
-				} else {
-	
-					// Gated SPECT data set, which has some number (usually 16)
-					// intervals per azimuthal projection.
-					fi.nImages = zdim * intervals;
+			} else {
 
-					// For each azimuth there is an additional 1664 byte header
-					// (beginning "adac01") at the normal image offset location. Add
-					// this to the image offset.
-					fi.offset = ADACDictionary.IM_OFFSET + intervals * 1664;
-					
+				// Gated SPECT data set, which has some number (usually 16)
+				// intervals per azimuthal projection.
+				fi.nImages = zdim * intervals;
+
+				// For each azimuth there is an additional 1664 byte header
+				// (beginning "adac01") at the normal image offset location. Add
+				// this to the image offset.
+				fi.offset = ADACDictionary.IM_OFFSET + intervals * 1664;
+
 			}
 
 		} else {
