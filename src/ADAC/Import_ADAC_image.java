@@ -4,6 +4,8 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 
 import ij.IJ;
 import ij.ImagePlus;
@@ -21,6 +23,15 @@ public class Import_ADAC_image extends ImagePlus implements PlugIn {
 	private BufferedInputStream inputStream;
 	private FileInfo fi = new FileInfo();
 
+	// Bit depth and set the default bit depth
+	private static final Map<Short, Integer> bitDepthMap = new HashMap<Short, Integer>();
+	static {
+		bitDepthMap.put(null, FileInfo.GRAY16_SIGNED);
+		bitDepthMap.put((short) 8, FileInfo.GRAY8);
+		bitDepthMap.put((short) 16, FileInfo.GRAY16_SIGNED);
+		bitDepthMap.put((short) 32, FileInfo.GRAY32_FLOAT);
+	}
+	
 	public Import_ADAC_image() {
 	}
 
@@ -54,6 +65,15 @@ public class Import_ADAC_image extends ImagePlus implements PlugIn {
 
 		try {
 			fi = ad.getFileInfo(fi);
+			fi.width = ad.getWidth();
+			fi.height = ad.getHeight();
+			fi.offset = ad.getImageOffset();
+			Log.log("Image offset: " + fi.offset);
+			
+			// Bitdepth
+			short adBitDepth = ad.getBitDepth();
+			fi.fileType = bitDepthMap.get(adBitDepth);			
+			
 		} catch (IOException e) {
 			String msg = e.getMessage();
 			msg = "This does not appear to be a valid\n" + "ADAC file.";

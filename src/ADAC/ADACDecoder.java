@@ -14,7 +14,6 @@ import ij.io.FileInfo;
 
 public class ADACDecoder implements KvpListener {
 
-	private final Map<Short, Integer> bitDepthMap;
 	private String directory, fileName;
 	private Map<String, String> extrasMap = new HashMap<String, String>();
 	private BufferedInputStream f;
@@ -48,13 +47,16 @@ public class ADACDecoder implements KvpListener {
 
 		keyList = new ArrayList<ADACKvp>();
 
-		// Bit depth and set the default bit depth
-		bitDepthMap = new HashMap<Short, Integer>();
-		bitDepthMap.put(null, FileInfo.GRAY16_SIGNED);
-		bitDepthMap.put((short) 8, FileInfo.GRAY8);
-		bitDepthMap.put((short) 16, FileInfo.GRAY16_SIGNED);
-		bitDepthMap.put((short) 32, FileInfo.GRAY32_FLOAT);
+	}
+	
+	/**
+	 * Get the bit depth of the image
+	 * @return
+	 */
+	public short getBitDepth(){
 
+		return shortsMap.get(ADACDictionary.PIXEL_BIT_DEPTH);
+		
 	}
 
 	public FileInfo getFileInfo(FileInfo fileinfo) throws IOException {
@@ -131,6 +133,60 @@ public class ADACDecoder implements KvpListener {
 
 		return new ADACKey(num, fieldOffset);
 
+	}
+	
+	/**
+	 * Get the image height in pixel units
+	 * @return
+	 */
+	public short getHeight(){
+		
+		return shortsMap.get(ADACDictionary.Y_DIMENSIONS);
+	}
+	
+	/**
+	 * Get the offset, in bytes, to the image data within the file
+	 * @return
+	 */
+	public int getImageOffset(){
+
+		if (isGated()) {
+
+			if (slices > 0) {
+
+				// Must have a gated reconstruction. For each gated interval
+				// there is an extra 128 byte header (beginning "adac01") block
+				// starting at the normal image offset location. Add this to the
+				// offset:
+				return ADACDictionary.IM_OFFSET + intervals * 128;
+
+			} else {
+
+				// Gated SPECT data set. For each azimuth there is an additional
+				// 1664 byte header (beginning "adac01") at the normal image
+				// offset location. Add this to the image offset.
+				return ADACDictionary.IM_OFFSET + intervals * 1664;
+
+			}
+
+		} else {
+			// Non gated data - simplest case
+			return ADACDictionary.IM_OFFSET;
+		}
+
+	}
+
+	public int getNumberOfImages(){
+		return 0;
+	}
+	
+	/**
+	 * Get the image width in pixel units
+	 * @return
+	 */
+	public short getWidth(){
+		
+		return shortsMap.get(ADACDictionary.X_DIMENSIONS);
 	}
 
 	/**
@@ -337,15 +393,10 @@ public class ADACDecoder implements KvpListener {
 	private void setValues() {
 
 		// Shorts
-		fi.width = shortsMap.get(ADACDictionary.X_DIMENSIONS);
-		fi.height = shortsMap.get(ADACDictionary.Y_DIMENSIONS);
 		zdim = shortsMap.get(ADACDictionary.Z_DIMENSIONS);
 		slices = shortsMap.get(ADACDictionary.RECONSTRUCTED_SLICES);
 		intervals = shortsMap.get(ADACDictionary.NUMBER_OF_IMAGE_SETS);
-
-		short adBitDepth = shortsMap.get(ADACDictionary.PIXEL_BIT_DEPTH);
-		fi.fileType = bitDepthMap.get(adBitDepth);
-
+		
 		// Ints
 		// Convert from milliseconds to seconds
 		fi.frameInterval = intsMap.get(ADACDictionary.FRAME_TIME) / 1000;
@@ -365,28 +416,17 @@ public class ADACDecoder implements KvpListener {
 				// (usually 16) intervals per reconstructed slice
 				fi.nImages = zdim * slices * intervals;
 
-				// For each gated interval there is an extra 128 byte header
-				// (beginning "adac01") block starting at the normal image
-				// offset location. Add this to the offset:
-				fi.offset = ADACDictionary.IM_OFFSET + intervals * 128;
-
 			} else {
 
 				// Gated SPECT data set, which has some number (usually 16)
 				// intervals per azimuthal projection.
 				fi.nImages = zdim * intervals;
 
-				// For each azimuth there is an additional 1664 byte header
-				// (beginning "adac01") at the normal image offset location. Add
-				// this to the image offset.
-				fi.offset = ADACDictionary.IM_OFFSET + intervals * 1664;
-
 			}
 
 		} else {
 			// Non gated data - simplest case
 			fi.nImages = zdim;
-			fi.offset = ADACDictionary.IM_OFFSET;
 		}
 
 	}
