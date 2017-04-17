@@ -48,8 +48,6 @@ public class ADACDecoder implements KvpListener {
 
 		keyList = new ArrayList<ADACKvp>();
 
-		fi = new FileInfo();
-
 		// Bit depth and set the default bit depth
 		bitDepthMap = new HashMap<Short, Integer>();
 		bitDepthMap.put(null, FileInfo.GRAY16_SIGNED);
@@ -59,8 +57,10 @@ public class ADACDecoder implements KvpListener {
 
 	}
 
-	public FileInfo getFileInfo() throws IOException {
+	public FileInfo getFileInfo(FileInfo fileinfo) throws IOException {
 
+		fi = fileinfo;
+		
 		if (inputStream != null) {
 			f = inputStream;
 		} else {

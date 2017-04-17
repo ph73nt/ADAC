@@ -53,7 +53,7 @@ public class Import_ADAC_image extends ImagePlus implements PlugIn {
 		setParameters();
 
 		try {
-			fi = ad.getFileInfo();
+			fi = ad.getFileInfo(fi);
 		} catch (IOException e) {
 			String msg = e.getMessage();
 			msg = "This does not appear to be a valid\n" + "ADAC file.";
