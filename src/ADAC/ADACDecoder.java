@@ -23,6 +23,7 @@ public class ADACDecoder implements KvpListener {
 	private BufferedInputStream inputStream;
 	public int intervals = 1;
 	private final Map<Short, Integer> intsMap;
+	private Boolean isGated = null;
 	private ByteBuffer keyBuffer;
 	private final ArrayList<ADACKvp> keyList;
 	private final Map<Short, Short> shortsMap;
@@ -109,6 +110,17 @@ public class ADACDecoder implements KvpListener {
 
 		return header.toString().trim();
 	}
+	
+	/**
+	 * Get the length of time of the acquisition of each frame.
+	 * @return
+	 */
+	public int getFrameTime(){
+	
+		// Convert from milliseconds to seconds
+		return intsMap.get(ADACDictionary.FRAME_TIME) / 1000;
+		
+	}
 
 	public BufferedInputStream getInputStream() {
 		return inputStream;
@@ -180,6 +192,27 @@ public class ADACDecoder implements KvpListener {
 		return 0;
 	}
 	
+	public float getPixelSize(){
+		
+		// Calculate pixel dimensions from the calibration factor.
+		// Calibration factor is the pixel size of a 1024x1024 pixel
+		// image acquired with the full field of view.
+		try {
+
+			String calString = extrasMap.get(ExtrasKvp.CALIB_KEY);
+			float cal = Float.parseFloat(calString);
+			if (cal != 0) {
+				float pixelWidth = cal * 1024 / xdim;
+				return pixelWidth; 
+			}
+		} catch (NumberFormatException e) {
+			Log.log("Unable to parse calibration factor");
+		}
+
+		return Float.NaN;
+		
+	}
+	
 	/**
 	 * Get the image width in pixel units
 	 * @return
@@ -197,22 +230,23 @@ public class ADACDecoder implements KvpListener {
 	 */
 	public boolean isGated() {
 
-		String AD_Type = stringsMap.get(ADACDictionary.DATA_TYPE);
+		if (isGated == null) {
+			
+			String AD_Type = stringsMap.get(ADACDictionary.DATA_TYPE);
 
-		if (AD_Type == null) {
+			if (AD_Type != null && AD_Type.startsWith("G")) {
 
-			return false;
+				// GE - Gated ECT
+				// GP - Gated planar (although these usually just get given DP)
+				isGated = true;
 
-		} else if (AD_Type.equals("GE") || AD_Type.equals("GP")) {
+			} else {
 
-			// GE - Gated ECT
-			// GP - Gated planar (although these usually just get given DP)
-			return true;
-
-		} else {
-
-			return false;
+				isGated = false;
+			}
 		}
+
+		return isGated;
 
 	}
 
@@ -397,11 +431,6 @@ public class ADACDecoder implements KvpListener {
 		slices = shortsMap.get(ADACDictionary.RECONSTRUCTED_SLICES);
 		intervals = shortsMap.get(ADACDictionary.NUMBER_OF_IMAGE_SETS);
 		
-		// Ints
-		// Convert from milliseconds to seconds
-		fi.frameInterval = intsMap.get(ADACDictionary.FRAME_TIME) / 1000;
-		Log.log("Image offset: " + fi.offset);
-
 		// Gated or non-gated
 		if (isGated()) {
 			// The GE data type represents gated objects...

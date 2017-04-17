@@ -25,6 +25,7 @@ public class Import_ADAC_image extends ImagePlus implements PlugIn {
 
 	// Bit depth and set the default bit depth
 	private static final Map<Short, Integer> bitDepthMap = new HashMap<Short, Integer>();
+	private ADACDecoder ad;
 	static {
 		bitDepthMap.put(null, FileInfo.GRAY16_SIGNED);
 		bitDepthMap.put((short) 8, FileInfo.GRAY8);
@@ -59,27 +60,9 @@ public class Import_ADAC_image extends ImagePlus implements PlugIn {
 		IJ.showStatus("Opening: " + directory + fi.fileName);
 		setStream(directory);
 		
-		ADACDecoder ad = new ADACDecoder(directory, fi.fileName);
+		ad = new ADACDecoder(directory, fi.fileName);
 		ad.setInputStream(inputStream);
 		setParameters();
-
-		try {
-			fi = ad.getFileInfo(fi);
-			fi.width = ad.getWidth();
-			fi.height = ad.getHeight();
-			fi.offset = ad.getImageOffset();
-			Log.log("Image offset: " + fi.offset);
-			
-			// Bitdepth
-			short adBitDepth = ad.getBitDepth();
-			fi.fileType = bitDepthMap.get(adBitDepth);			
-			
-		} catch (IOException e) {
-			String msg = e.getMessage();
-			msg = "This does not appear to be a valid\n" + "ADAC file.";
-			Log.error("ADACDecoder", msg);
-			return;
-		}
 
 		if (fi != null && fi.width > 0 && fi.height > 0 && fi.offset > 0) {
 
@@ -154,6 +137,32 @@ public class Import_ADAC_image extends ImagePlus implements PlugIn {
 
 		fi.fileFormat = FileInfo.RAW;
 		fi.intelByteOrder = false;
+
+		try {
+			fi = ad.getFileInfo(fi);
+			fi.width = ad.getWidth();
+			fi.height = ad.getHeight();
+			fi.frameInterval = ad.getFrameTime();
+			fi.offset = ad.getImageOffset();
+			Log.log("Image offset: " + fi.offset);
+			
+			// Bitdepth
+			short adBitDepth = ad.getBitDepth();
+			fi.fileType = bitDepthMap.get(adBitDepth);	
+			
+			// ADAC only does square pixels
+			fi.pixelWidth = ad.getPixelSize();
+			fi.pixelHeight = fi.pixelWidth;
+			fi.unit = "mm";
+			
+		} catch (IOException e) {
+
+			String msg = e.getMessage();
+			msg = "This does not appear to be a valid\n" + "ADAC file.";
+			Log.error("ADACDecoder", msg);
+
+			return;
+		}
 
 	}
 }
