@@ -33,7 +33,7 @@ public class ADACDecoder implements KvpListener {
 	private final Map<Short, String> stringsMap;
 	private ByteBuffer valBuffer;
 	private byte[] valHeaders;
-	public int xdim, ydim, bitDepth;
+	public int ydim, bitDepth;
 	public int zdim = 1;
 
 	public ADACDecoder(String directory, String fileName) {
@@ -89,7 +89,6 @@ public class ADACDecoder implements KvpListener {
 		// Parse the header
 		parseHeader();
 		setValues();
-		fi = parseADACExtras(fi);
 
 		return fi;
 
@@ -192,27 +191,33 @@ public class ADACDecoder implements KvpListener {
 		return 0;
 	}
 	
-	public float getPixelSize(){
-		
-		// Calculate pixel dimensions from the calibration factor.
-		// Calibration factor is the pixel size of a 1024x1024 pixel
-		// image acquired with the full field of view.
+	/**
+	 * Get the pixel size in mm.
+	 * 
+	 * The pixel pixel dimensions are calculated from the calibration factor.
+	 * Calibration factor is the pixel size of a 1024x1024 pixel image acquired
+	 * with the full field of view.
+	 * 
+	 * @return
+	 */
+	public float getPixelSize() {
+
+		float pixelWidth = 0;
+
 		try {
 
 			String calString = extrasMap.get(ExtrasKvp.CALIB_KEY);
 			float cal = Float.parseFloat(calString);
-			if (cal != 0) {
-				float pixelWidth = cal * 1024 / xdim;
-				return pixelWidth; 
-			}
+			pixelWidth = cal * 1024 / getWidth();
+
 		} catch (NumberFormatException e) {
 			Log.log("Unable to parse calibration factor");
 		}
 
-		return Float.NaN;
-		
+		return pixelWidth;
+
 	}
-	
+
 	/**
 	 * Get the image width in pixel units
 	 * @return
@@ -248,34 +253,6 @@ public class ADACDecoder implements KvpListener {
 
 		return isGated;
 
-	}
-
-	/**
-	 * Parse the Program Specific key/value pair for "extra" information.
-	 * 
-	 * @param fi
-	 * @return
-	 */
-	private FileInfo parseADACExtras(FileInfo fi) {
-
-		// Calculate pixel dimensions from the calibration factor.
-		// Calibration factor is the pixel size of a 1024x1024 pixel
-		// image acquired with the full field of view.
-		try {
-
-			String calString = extrasMap.get(ExtrasKvp.CALIB_KEY);
-			float cal = Float.parseFloat(calString);
-			if (cal != 0) {
-				fi.pixelWidth = cal * 1024 / xdim;
-				// ADAC only does square pixels
-				fi.pixelHeight = fi.pixelWidth;
-				fi.unit = "mm";
-			}
-		} catch (NumberFormatException e) {
-			Log.log("Unable to parse calibration factor");
-		}
-
-		return fi;
 	}
 
 	/**
