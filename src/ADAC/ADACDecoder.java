@@ -331,6 +331,16 @@ public class ADACDecoder implements KvpListener {
 		return isGated;
 
 	}
+	
+	/**
+	 * Check if the image is a tomographic reconstruction.
+	 * 
+	 * @return true if the number of reconstructed slices is greater than 0,
+	 *         false otherwise.
+	 */
+	public boolean isReconstruction() {
+		return getShort(ADACDictionary.RECONSTRUCTED_SLICES) > 0;
+	}	
 
 	/**
 	 * Parse the header information for key-value pairs.
