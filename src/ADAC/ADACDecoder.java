@@ -56,7 +56,7 @@ public class ADACDecoder implements KvpListener {
 	 */
 	public short getBitDepth(){
 
-		return shortsMap.get(ADACDictionary.PIXEL_BIT_DEPTH);
+		return getShort(ADACDictionary.PIXEL_BIT_DEPTH);
 		
 	}
 
@@ -93,6 +93,18 @@ public class ADACDecoder implements KvpListener {
 		return fi;
 
 	}
+	
+	/**
+	 * Return a floating point value represented by the key argument (a
+	 * near-definitive list is given in the dictionary class).
+	 * 
+	 * @param dictionaryKey
+	 * @return
+	 */
+	public float getFloat(short dictionaryKey) {
+		return floatsMap.get(dictionaryKey);
+	}
+
 
 	public Object getImageInfo() {
 
@@ -117,7 +129,7 @@ public class ADACDecoder implements KvpListener {
 	public int getFrameTime(){
 	
 		// Convert from milliseconds to seconds
-		return intsMap.get(ADACDictionary.FRAME_TIME) / 1000;
+		return getInteger(ADACDictionary.FRAME_TIME) / 1000;
 		
 	}
 
@@ -152,7 +164,7 @@ public class ADACDecoder implements KvpListener {
 	 */
 	public short getHeight(){
 		
-		return shortsMap.get(ADACDictionary.Y_DIMENSIONS);
+		return getShort(ADACDictionary.Y_DIMENSIONS);
 	}
 	
 	/**
@@ -187,6 +199,17 @@ public class ADACDecoder implements KvpListener {
 
 	}
 
+	/**
+	 * Return an integer value represented by the key argument (a
+	 * near-definitive list is given in the dictionary class).
+	 * 
+	 * @param dictionaryKey
+	 * @return
+	 */
+	public int getInteger(short dictionaryKey) {
+		return intsMap.get(dictionaryKey);
+	}
+
 	public int getNumberOfImages(){
 		return 0;
 	}
@@ -206,7 +229,7 @@ public class ADACDecoder implements KvpListener {
 	public float getPixelSize() {
 
 		float pixelSize = 0;
-		float zoom = floatsMap.get(ADACDictionary.ZOOM);
+		float zoom = getFloat(ADACDictionary.ZOOM);
 
 		// Get calibration factor (CALB)
 		String calString = extrasMap.get(ExtrasKvp.CALIB_KEY);
@@ -249,6 +272,28 @@ public class ADACDecoder implements KvpListener {
 		return pixels > 0 ? size/pixels : 0;
 		
 	}
+	
+	/**
+	 * Return a short integer value represented by the key argument (a
+	 * near-definitive list is given in the dictionary class).
+	 * 
+	 * @param dictionaryKey
+	 * @return
+	 */
+	public short getShort(short dictionaryKey) {
+		return shortsMap.get(dictionaryKey);
+	}
+
+	/**
+	 * Return a string value represented by the key argument (a
+	 * near-definitive list is given in the dictionary class).
+	 * 
+	 * @param dictionaryKey
+	 * @return
+	 */
+	public String getString(short dictionaryKey) {
+		return stringsMap.get(dictionaryKey);
+	}
 
 	/**
 	 * Get the image width in pixel units
@@ -256,7 +301,7 @@ public class ADACDecoder implements KvpListener {
 	 */
 	public short getWidth(){
 		
-		return shortsMap.get(ADACDictionary.X_DIMENSIONS);
+		return getShort(ADACDictionary.X_DIMENSIONS);
 	}
 
 	/**
@@ -269,7 +314,7 @@ public class ADACDecoder implements KvpListener {
 
 		if (isGated == null) {
 			
-			String AD_Type = stringsMap.get(ADACDictionary.DATA_TYPE);
+			String AD_Type = getString(ADACDictionary.DATA_TYPE);
 
 			if (AD_Type != null && AD_Type.startsWith("G")) {
 
@@ -436,9 +481,9 @@ public class ADACDecoder implements KvpListener {
 	private void setValues() {
 
 		// Shorts
-		zdim = shortsMap.get(ADACDictionary.Z_DIMENSIONS);
-		slices = shortsMap.get(ADACDictionary.RECONSTRUCTED_SLICES);
-		intervals = shortsMap.get(ADACDictionary.NUMBER_OF_IMAGE_SETS);
+		zdim = getShort(ADACDictionary.Z_DIMENSIONS);
+		slices = getShort(ADACDictionary.RECONSTRUCTED_SLICES);
+		intervals = getShort(ADACDictionary.NUMBER_OF_IMAGE_SETS);
 		
 		// Gated or non-gated
 		if (isGated()) {
