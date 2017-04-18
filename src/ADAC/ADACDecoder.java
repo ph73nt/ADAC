@@ -175,7 +175,7 @@ public class ADACDecoder implements KvpListener {
 
 		if (isGated()) {
 
-			if (slices > 0) {
+			if (isReconstruction()) {
 
 				// Must have a gated reconstruction. For each gated interval
 				// there is an extra 128 byte header (beginning "adac01") block

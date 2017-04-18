@@ -75,7 +75,7 @@ public class Import_ADAC_image extends ImagePlus implements PlugIn {
 				if (ad.isGated()) {
 
 					// Is it a reconstruction?
-					if (ad.slices > 0 && ad.intervals > 1) {
+					if (ad.isReconstruction() && ad.intervals > 1) {
 						// Yes it is a reconstruction
 						setDimensions(1, ad.slices, ad.intervals);
 					} else {
