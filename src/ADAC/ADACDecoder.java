@@ -196,26 +196,58 @@ public class ADACDecoder implements KvpListener {
 	 * 
 	 * The pixel pixel dimensions are calculated from the calibration factor.
 	 * Calibration factor is the pixel size of a 1024x1024 pixel image acquired
-	 * with the full field of view.
+	 * with the full field of view. Pixel size is calculated with the following
+	 * equation:
+	 * 
+	 * (1024 * CALB)/(dim * zoom) mm/pixel
 	 * 
 	 * @return
 	 */
 	public float getPixelSize() {
 
-		float pixelWidth = 0;
+		float pixelSize = 0;
+		float zoom = floatsMap.get(ADACDictionary.ZOOM);
 
-		try {
+		// Get calibration factor (CALB)
+		String calString = extrasMap.get(ExtrasKvp.CALIB_KEY);
 
-			String calString = extrasMap.get(ExtrasKvp.CALIB_KEY);
-			float cal = Float.parseFloat(calString);
-			pixelWidth = cal * 1024 / getWidth();
+		// Some wholebody images have height > width. Typically 1024x512.
+		// Crocodile eats the biggest.
+		short height = getHeight();
+		short width = getWidth();
+		short dim = height > width ? height : width;
 
-		} catch (NumberFormatException e) {
-			Log.log("Unable to parse calibration factor");
+		if (dim > 0 && calString != null) {
+
+			try {
+
+				float cal = Float.parseFloat(calString);
+
+				// Now calculate the pixel size
+				pixelSize = (1024 * cal) / (dim * zoom);
+
+			} catch (NumberFormatException e) {
+
+				Log.log("Unable to parse calibration factor");
+				pixelSize = getRoughPixelSize();
+
+			}
+		} else {
+			pixelSize = getRoughPixelSize();
 		}
 
-		return pixelWidth;
+		return pixelSize;
 
+	}
+	
+	private float getRoughPixelSize(){
+		
+		// Fall back on a-priori knowledge of useful field of view size
+		// (520mm x 380 mm), which gives a rough approximation.
+		float size = 380; // mm
+		float pixels = getHeight();
+		return pixels > 0 ? size/pixels : 0;
+		
 	}
 
 	/**
