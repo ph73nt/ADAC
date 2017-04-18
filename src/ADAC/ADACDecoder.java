@@ -126,7 +126,7 @@ public class ADACDecoder implements KvpListener {
 	 * Get the length of time of the acquisition of each frame.
 	 * @return
 	 */
-	public int getFrameTime(){
+	public double getFrameTime(){
 	
 		// Convert from milliseconds to seconds
 		return getInteger(ADACDictionary.FRAME_TIME) / 1000;
