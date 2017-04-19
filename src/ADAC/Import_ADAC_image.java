@@ -74,12 +74,16 @@ public class Import_ADAC_image extends ImagePlus implements PlugIn {
 				// Gated image set
 				if (ad.isGated()) {
 
+					int intervals = ad.getNumberOfGatedIntervals();
+					int slices = ad.getNumberOfSlices();
+					int zdim = ad.getZDim();
+					
 					// Is it a reconstruction?
-					if (ad.isReconstruction() && ad.intervals > 1) {
+					if (ad.isReconstruction() && intervals > 1) {
 						// Yes it is a reconstruction
-						setDimensions(1, ad.slices, ad.intervals);
+						setDimensions(1, slices, intervals);
 					} else {
-						setDimensions(1, ad.zdim, ad.intervals);
+						setDimensions(1, zdim, intervals);
 					}
 					setOpenAsHyperStack(true);
 				}
@@ -143,6 +147,7 @@ public class Import_ADAC_image extends ImagePlus implements PlugIn {
 			fi.width = ad.getWidth();
 			fi.height = ad.getHeight();
 			fi.frameInterval = ad.getFrameTime();
+			fi.nImages = ad.getNumberOfImages();
 			fi.offset = ad.getImageOffset();
 			Log.log("Image offset: " + fi.offset);
 			

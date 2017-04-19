@@ -21,7 +21,6 @@ public class ADACDecoder implements KvpListener {
 	private final Map<Short, Float> floatsMap;
 
 	private BufferedInputStream inputStream;
-	public int intervals = 1;
 	private final Map<Short, Integer> intsMap;
 	private Boolean isGated = null;
 	private ByteBuffer keyBuffer;
@@ -29,12 +28,10 @@ public class ADACDecoder implements KvpListener {
 	private final Map<Short, Short> shortsMap;
 	public double slice_t, frameTime;
 
-	public int slices = 1;
 	private final Map<Short, String> stringsMap;
 	private ByteBuffer valBuffer;
 	private byte[] valHeaders;
 	public int ydim, bitDepth;
-	public int zdim = 1;
 
 	public ADACDecoder(String directory, String fileName) {
 
@@ -88,7 +85,6 @@ public class ADACDecoder implements KvpListener {
 
 		// Parse the header
 		parseHeader();
-		setValues();
 
 		return fi;
 
@@ -174,21 +170,21 @@ public class ADACDecoder implements KvpListener {
 	public int getImageOffset(){
 
 		if (isGated()) {
-
+			
 			if (isReconstruction()) {
 
 				// Must have a gated reconstruction. For each gated interval
 				// there is an extra 128 byte header (beginning "adac01") block
 				// starting at the normal image offset location. Add this to the
 				// offset:
-				return ADACDictionary.IM_OFFSET + intervals * 128;
+				return ADACDictionary.IM_OFFSET + getNumberOfGatedIntervals() * 128;
 
 			} else {
 
 				// Gated SPECT data set. For each azimuth there is an additional
 				// 1664 byte header (beginning "adac01") at the normal image
 				// offset location. Add this to the image offset.
-				return ADACDictionary.IM_OFFSET + intervals * 1664;
+				return ADACDictionary.IM_OFFSET + getNumberOfGatedIntervals() * 1664;
 
 			}
 
@@ -210,8 +206,41 @@ public class ADACDecoder implements KvpListener {
 		return intsMap.get(dictionaryKey);
 	}
 
-	public int getNumberOfImages(){
-		return 0;
+	/**
+	 * Get the number of intervals in a gated image set
+	 * 
+	 * @return
+	 */
+	public short getNumberOfGatedIntervals(){
+		return getShort(ADACDictionary.NUMBER_OF_IMAGE_SETS);
+	}
+	/**
+	 * Get the total number of images in the file.
+	 * 
+	 * @return
+	 */
+	public int getNumberOfImages() {
+
+		short zdim = getZDim();
+		zdim = zdim > 0 ? zdim : 1;
+		
+		short slices = getNumberOfSlices();
+		slices = slices > 0 ? slices : 1;
+		
+		short intervals = getNumberOfGatedIntervals();
+		intervals = intervals > 0 ? intervals : 1;
+		
+		return zdim * slices * intervals;
+		
+	}
+	
+	/**
+	 * Get the number of slices in a reconstructed data set.
+	 * 
+	 * @return
+	 */
+	public short getNumberOfSlices(){
+		return getShort(ADACDictionary.RECONSTRUCTED_SLICES);
 	}
 	
 	/**
@@ -302,6 +331,16 @@ public class ADACDecoder implements KvpListener {
 	public short getWidth(){
 		
 		return getShort(ADACDictionary.X_DIMENSIONS);
+	}
+	
+	/**
+	 * Get the Z-Dimension. This is usually the number of frames of a dynamic
+	 * data set.
+	 * 
+	 * @return
+	 */
+	public short getZDim() {
+		return getShort(ADACDictionary.Z_DIMENSIONS);
 	}
 
 	/**
@@ -486,42 +525,6 @@ public class ADACDecoder implements KvpListener {
 	 */
 	public void setInputStream(BufferedInputStream bis) {
 		inputStream = bis;
-	}
-
-	private void setValues() {
-
-		// Shorts
-		zdim = getShort(ADACDictionary.Z_DIMENSIONS);
-		slices = getShort(ADACDictionary.RECONSTRUCTED_SLICES);
-		intervals = getShort(ADACDictionary.NUMBER_OF_IMAGE_SETS);
-		
-		// Gated or non-gated
-		if (isGated()) {
-			// The GE data type represents gated objects...
-			// must have one of the following objects:
-			// - Gated SPECT projections
-			// - Gated reconstruction
-			// - Gated planar (although all examples of these I have seen just
-			// use the dynamic planar (DP) data type)
-			if (slices > 0) {
-
-				// Must have a gated reconstruction, which has some number
-				// (usually 16) intervals per reconstructed slice
-				fi.nImages = zdim * slices * intervals;
-
-			} else {
-
-				// Gated SPECT data set, which has some number (usually 16)
-				// intervals per azimuthal projection.
-				fi.nImages = zdim * intervals;
-
-			}
-
-		} else {
-			// Non gated data - simplest case
-			fi.nImages = zdim;
-		}
-
 	}
 
 }
