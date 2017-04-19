@@ -75,11 +75,6 @@ public class ADACDecoder implements KvpListener {
 		f.read(bytHeader, 0, bytHeader.length);
 		f.read(valHeaders, ADACDictionary.LABEL_OFFSET, valHeaders.length - ADACDictionary.LABEL_OFFSET);
 
-		if (fi.intelByteOrder) {
-			keyBuffer.order(ByteOrder.LITTLE_ENDIAN);
-			valBuffer.order(ByteOrder.LITTLE_ENDIAN);
-		}
-
 		keyBuffer = ByteBuffer.wrap(bytHeader);
 		valBuffer = ByteBuffer.wrap(valHeaders);
 

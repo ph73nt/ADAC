@@ -140,6 +140,8 @@ public class Import_ADAC_image extends ImagePlus implements PlugIn {
 	private void setParameters() {
 
 		fi.fileFormat = FileInfo.RAW;
+		
+		// ADAC objects always big-endian
 		fi.intelByteOrder = false;
 
 		try {
