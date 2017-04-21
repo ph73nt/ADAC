@@ -11,22 +11,23 @@ import java.util.Map;
 
 public class ADACDecoder implements KvpListener {
 
-	private Map<String, String> extrasMap = new HashMap<String, String>();
-	private BufferedInputStream f;
-	private final Map<Short, Float> floatsMap;
-
-	private BufferedInputStream inputStream;
-	private final Map<Short, Integer> intsMap;
+	private final ArrayList<ADACKvp> keyList = new ArrayList<ADACKvp>();
+	
 	private Boolean isGated = null;
-	private ByteBuffer keyBuffer;
-	private final ArrayList<ADACKvp> keyList;
-	private final Map<Short, Short> shortsMap;
-	public double slice_t, frameTime;
-
-	private final Map<Short, String> stringsMap;
-	private ByteBuffer valBuffer;
+	
+	private BufferedInputStream f;
+	private BufferedInputStream inputStream;
+	
 	private byte[] valHeaders;
-	public int ydim, bitDepth;
+	
+	private ByteBuffer keyBuffer;
+	private ByteBuffer valBuffer;
+	
+	private Map<String, String> extrasMap = new HashMap<String, String>();
+	private final Map<Short, Float> floatsMap = new HashMap<Short, Float>();
+	private final Map<Short, Integer> intsMap = new HashMap<Short, Integer>();
+	private final Map<Short, Short> shortsMap = new HashMap<Short, Short>();
+	private final Map<Short, String> stringsMap = new HashMap<Short, String>();
 	
 	public ADACDecoder(String directory, String fileName) throws IOException {
 
@@ -38,16 +39,9 @@ public class ADACDecoder implements KvpListener {
 		
 		inputStream = bis;
 
-		stringsMap = new HashMap<Short, String>();
-		shortsMap = new HashMap<Short, Short>();
-		intsMap = new HashMap<Short, Integer>();
-		floatsMap = new HashMap<Short, Float>();
-
-		keyList = new ArrayList<ADACKvp>();
-
 		if (inputStream != null) {
 			f = inputStream;
-		} else {
+		} else {	
 			f = new BufferedInputStream(new FileInputStream(directory + fileName));
 		}
 
