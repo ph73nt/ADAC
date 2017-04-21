@@ -116,10 +116,6 @@ public class ADACDecoder implements KvpListener {
 		
 	}
 
-	public BufferedInputStream getInputStream() {
-		return inputStream;
-	}
-
 	private ADACKey getKeys() throws IOException {
 
 		// Get the key number for cross-referencing with the dictionary
