@@ -84,8 +84,12 @@ public class ADACDecoder implements KvpListener {
 		return floatsMap.get(dictionaryKey);
 	}
 
-
-	public Object getImageInfo() {
+	/**
+	 * get a string containing all the found key-value pairs.
+	 * 
+	 * @return
+	 */
+	public String toString() {
 
 		StringBuffer header = new StringBuffer();
 

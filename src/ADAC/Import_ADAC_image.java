@@ -102,7 +102,7 @@ public class Import_ADAC_image extends ImagePlus implements PlugIn, ADACLog {
 
 			setCalibration(imp.getCalibration());
 
-			setProperty("Info", ad.getImageInfo());// getHeader());
+			setProperty("Info", ad.toString());// getHeader());
 
 			setFileInfo(fi); // needed for revert
 
