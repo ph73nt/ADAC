@@ -11,6 +11,7 @@ import java.util.Map;
 
 public class ADACDecoder implements KvpListener {
 
+	private final ADACLog logger;
 	private final ArrayList<ADACKvp> keyList = new ArrayList<ADACKvp>();
 	
 	private Boolean isGated = null;
@@ -29,14 +30,17 @@ public class ADACDecoder implements KvpListener {
 	private final Map<Short, Short> shortsMap = new HashMap<Short, Short>();
 	private final Map<Short, String> stringsMap = new HashMap<Short, String>();
 	
-	public ADACDecoder(String directory, String fileName) throws IOException {
+	public ADACDecoder(String directory, String fileName, ADACLog adacLog) throws IOException {
 
-		this(directory, fileName, null);
+		this(directory, fileName, null, adacLog);
 		
 	}
 	
-	public ADACDecoder(String directory, String fileName, BufferedInputStream bis) throws IOException {
-		
+	public ADACDecoder(String directory, String fileName, BufferedInputStream bis, ADACLog adacLog) throws IOException {
+				
+		logger = adacLog;
+		logger.log("\nADACDecoder: decoding " + fileName);
+
 		inputStream = bis;
 
 		if (inputStream != null) {
@@ -56,8 +60,7 @@ public class ADACDecoder implements KvpListener {
 
 		// Parse the header
 		parseHeader();
-
-		
+	
 	}
 	
 	/**
@@ -261,7 +264,7 @@ public class ADACDecoder implements KvpListener {
 
 			} catch (NumberFormatException e) {
 
-				Log.log("Unable to parse calibration factor");
+				logger.log("Unable to parse calibration factor");
 				pixelSize = getRoughPixelSize();
 
 			}
@@ -376,14 +379,14 @@ public class ADACDecoder implements KvpListener {
 		// First 10 bytes reserved for preamble
 		byte[] sixBytes = new byte[6];
 		keyBuffer.get(sixBytes, 0, 6);
-		Log.log(new String(sixBytes) + "\n"); // says adac01
+		logger.log(new String(sixBytes) + "\n"); // says adac01
 
 		try {
 
 			short labels = keyBuffer.getShort();
-			Log.log(Integer.toString(labels)); // Number of labels in header
-			Log.log(Integer.toString(keyBuffer.get())); // Number of sub-headers
-			Log.log(Integer.toString(keyBuffer.get())); // Unused byte
+			logger.log(Integer.toString(labels)); // Number of labels in header
+			logger.log(Integer.toString(keyBuffer.get())); // Number of sub-headers
+			logger.log(Integer.toString(keyBuffer.get())); // Unused byte
 
 			// For each header field available.. get them
 			for (short i = 0; i < labels; i++) {
@@ -424,7 +427,7 @@ public class ADACDecoder implements KvpListener {
 			}
 
 		} catch (IOException e) {
-			Log.error("ADAC Decoder", "Failed to retrieve ADAC image file header. " + "Is this an ADAC image file?");
+			logger.error("ADAC Decoder", "Failed to retrieve ADAC image file header. " + "Is this an ADAC image file?");
 		}
 	}
 
@@ -443,7 +446,7 @@ public class ADACDecoder implements KvpListener {
 		byteKvp.setString(bytes);
 
 		stringsMap.put(byteKvp.getKeyNum(), byteKvp.getString());
-		Log.log(byteKvp.getLogString());
+		logger.log(byteKvp.getLogString());
 
 	}
 
@@ -472,7 +475,7 @@ public class ADACDecoder implements KvpListener {
 		float floatValue = valBuffer.getFloat(floatKvp.getFieldOffset());
 		floatKvp.setValue(floatValue);
 		floatsMap.put(floatKvp.getKeyNum(), floatKvp.getValue());
-		Log.log(floatKvp.getLogString());
+		logger.log(floatKvp.getLogString());
 
 	}
 
@@ -484,7 +487,7 @@ public class ADACDecoder implements KvpListener {
 		int m_Int = valBuffer.getInt(intKvp.getFieldOffset());
 		intKvp.setValue(m_Int);
 		intsMap.put(intKvp.getKeyNum(), intKvp.getValue());
-		Log.log(intKvp.getLogString());
+		logger.log(intKvp.getLogString());
 
 	}
 
@@ -496,7 +499,7 @@ public class ADACDecoder implements KvpListener {
 		short shortValue = valBuffer.getShort(shortKvp.getFieldOffset());
 		shortKvp.setValue(shortValue);
 		shortsMap.put(shortKvp.getKeyNum(), shortKvp.getValue());
-		Log.log(shortKvp.getLogString());
+		logger.log(shortKvp.getLogString());
 
 	}
 

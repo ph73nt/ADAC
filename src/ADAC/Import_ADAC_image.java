@@ -18,7 +18,7 @@ import ij.plugin.PlugIn;
  *
  * @author NTHOMSON
  */
-public class Import_ADAC_image extends ImagePlus implements PlugIn {
+public class Import_ADAC_image extends ImagePlus implements PlugIn, ADACLog {
 
 	private BufferedInputStream inputStream;
 	private FileInfo fi = new FileInfo();
@@ -60,14 +60,12 @@ public class Import_ADAC_image extends ImagePlus implements PlugIn {
 		IJ.showStatus("Opening: " + directory + fi.fileName);
 		setStream(directory);
 
-		Log.log("\nADACDecoder: decoding " + fi.fileName);
-
 		try {
-			ad = new ADACDecoder(directory, fi.fileName, inputStream);
+			ad = new ADACDecoder(directory, fi.fileName, inputStream, this);
 		} catch (IOException e) {
 			String msg = e.getMessage();
 			msg = "This does not appear to be a valid\n" + "ADAC file.";
-			Log.error("ADACDecoder", msg);
+			error("ADACDecoder", msg);
 		}
 
 		setParameters();
@@ -113,7 +111,7 @@ public class Import_ADAC_image extends ImagePlus implements PlugIn {
 			}
 
 		} else { // if (showErrors)
-			Log.error("ADACDecoder", "Unable to decode ADAC header.");
+			error("ADACDecoder", "Unable to decode ADAC header.");
 		}
 
 		IJ.showStatus("");
@@ -139,7 +137,7 @@ public class Import_ADAC_image extends ImagePlus implements PlugIn {
 		} catch (IOException e) {
 			String msg = e.getMessage();
 			msg = "This does not appear to be a valid\n" + "ADAC file.";
-			Log.error("ADACDecoder", msg);
+			error("ADACDecoder", msg);
 			return;
 		}
 
@@ -157,7 +155,7 @@ public class Import_ADAC_image extends ImagePlus implements PlugIn {
 		fi.frameInterval = ad.getFrameTime();
 		fi.nImages = ad.getNumberOfImages();
 		fi.offset = ad.getImageOffset();
-		Log.log("Image offset: " + fi.offset);
+		log("Image offset: " + fi.offset);
 
 		// Bitdepth
 		short adBitDepth = ad.getBitDepth();
@@ -168,5 +166,22 @@ public class Import_ADAC_image extends ImagePlus implements PlugIn {
 		fi.pixelHeight = fi.pixelWidth;
 		fi.unit = "mm";
 
+	}
+
+	public void log(String text) {
+		
+		if (IJ.debugMode) {
+
+			IJ.log(text);
+
+		}
+		
+	}
+
+	public void error(String title, String text) {
+		
+		IJ.error(title, text);
+
+		
 	}
 }
