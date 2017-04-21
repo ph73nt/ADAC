@@ -1,12 +1,9 @@
 # ADAC for Imagej
-ADAC image import and export for ImageJ
+ADAC image import for ImageJ
 
-To get going straight away, download the ADAC_Utils.jar binary file and place in your Imagej plugins directory for the following Imagej menu items:
+To get going straight away, download the ADAC_Utils.jar binary file and place in your Imagej plugins directory for the following Imagej menu item:
 * Plugins
     * ADAC
-      * Export ADAC Image
       * Import ADAC Image
 
-Most folks will be using the importer. Currently work very well for static all image types I have tried: planar, dynamic, SPECT and gated.
-
-The export works well for planars, but development has stalled on the export function due to lack of requirement since most ADAC systems support either or both Interfile or DICOM.
+The importer works well for  all image types I have tried: planar, dynamic, SPECT and gated. Gated tomographic sets open as hyperstacks.
