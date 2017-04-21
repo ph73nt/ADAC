@@ -32,7 +32,7 @@ public class Import_ADAC_image extends ImagePlus implements PlugIn {
 		bitDepthMap.put((short) 16, FileInfo.GRAY16_SIGNED);
 		bitDepthMap.put((short) 32, FileInfo.GRAY32_FLOAT);
 	}
-	
+
 	public Import_ADAC_image() {
 	}
 
@@ -59,9 +59,17 @@ public class Import_ADAC_image extends ImagePlus implements PlugIn {
 
 		IJ.showStatus("Opening: " + directory + fi.fileName);
 		setStream(directory);
-		
-		ad = new ADACDecoder(directory, fi.fileName);
-		ad.setInputStream(inputStream);
+
+		Log.log("\nADACDecoder: decoding " + fi.fileName);
+
+		try {
+			ad = new ADACDecoder(directory, fi.fileName, inputStream);
+		} catch (IOException e) {
+			String msg = e.getMessage();
+			msg = "This does not appear to be a valid\n" + "ADAC file.";
+			Log.error("ADACDecoder", msg);
+		}
+
 		setParameters();
 
 		if (fi != null && fi.width > 0 && fi.height > 0 && fi.offset > 0) {
@@ -77,7 +85,7 @@ public class Import_ADAC_image extends ImagePlus implements PlugIn {
 					int intervals = ad.getNumberOfGatedIntervals();
 					int slices = ad.getNumberOfSlices();
 					int zdim = ad.getZDim();
-					
+
 					// Is it a reconstruction?
 					if (ad.isReconstruction() && intervals > 1) {
 						// Yes it is a reconstruction
@@ -115,7 +123,7 @@ public class Import_ADAC_image extends ImagePlus implements PlugIn {
 	private void setStream(String directory) {
 
 		try {
-			
+
 			if (directory.indexOf("://") > 0) { // is URL
 
 				URL u = new URL(directory + fi.fileName);
@@ -127,7 +135,7 @@ public class Import_ADAC_image extends ImagePlus implements PlugIn {
 			} else {
 				fi.directory = directory;
 			}
-			
+
 		} catch (IOException e) {
 			String msg = e.getMessage();
 			msg = "This does not appear to be a valid\n" + "ADAC file.";
@@ -140,36 +148,25 @@ public class Import_ADAC_image extends ImagePlus implements PlugIn {
 	private void setParameters() {
 
 		fi.fileFormat = FileInfo.RAW;
-		
+
 		// ADAC objects always big-endian
 		fi.intelByteOrder = false;
 
-		try {
-			fi = ad.getFileInfo(fi);
-			fi.width = ad.getWidth();
-			fi.height = ad.getHeight();
-			fi.frameInterval = ad.getFrameTime();
-			fi.nImages = ad.getNumberOfImages();
-			fi.offset = ad.getImageOffset();
-			Log.log("Image offset: " + fi.offset);
-			
-			// Bitdepth
-			short adBitDepth = ad.getBitDepth();
-			fi.fileType = bitDepthMap.get(adBitDepth);	
-			
-			// ADAC only does square pixels
-			fi.pixelWidth = ad.getPixelSize();
-			fi.pixelHeight = fi.pixelWidth;
-			fi.unit = "mm";
-			
-		} catch (IOException e) {
+		fi.width = ad.getWidth();
+		fi.height = ad.getHeight();
+		fi.frameInterval = ad.getFrameTime();
+		fi.nImages = ad.getNumberOfImages();
+		fi.offset = ad.getImageOffset();
+		Log.log("Image offset: " + fi.offset);
 
-			String msg = e.getMessage();
-			msg = "This does not appear to be a valid\n" + "ADAC file.";
-			Log.error("ADACDecoder", msg);
+		// Bitdepth
+		short adBitDepth = ad.getBitDepth();
+		fi.fileType = bitDepthMap.get(adBitDepth);
 
-			return;
-		}
+		// ADAC only does square pixels
+		fi.pixelWidth = ad.getPixelSize();
+		fi.pixelHeight = fi.pixelWidth;
+		fi.unit = "mm";
 
 	}
 }

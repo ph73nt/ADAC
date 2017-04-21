@@ -4,20 +4,15 @@ import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import ij.io.FileInfo;
-
 public class ADACDecoder implements KvpListener {
 
-	private String directory, fileName;
 	private Map<String, String> extrasMap = new HashMap<String, String>();
 	private BufferedInputStream f;
-	private FileInfo fi;
 	private final Map<Short, Float> floatsMap;
 
 	private BufferedInputStream inputStream;
@@ -32,11 +27,16 @@ public class ADACDecoder implements KvpListener {
 	private ByteBuffer valBuffer;
 	private byte[] valHeaders;
 	public int ydim, bitDepth;
+	
+	public ADACDecoder(String directory, String fileName) throws IOException {
 
-	public ADACDecoder(String directory, String fileName) {
-
-		this.directory = directory;
-		this.fileName = fileName;
+		this(directory, fileName, null);
+		
+	}
+	
+	public ADACDecoder(String directory, String fileName, BufferedInputStream bis) throws IOException {
+		
+		inputStream = bis;
 
 		stringsMap = new HashMap<Short, String>();
 		shortsMap = new HashMap<Short, Short>();
@@ -45,29 +45,11 @@ public class ADACDecoder implements KvpListener {
 
 		keyList = new ArrayList<ADACKvp>();
 
-	}
-	
-	/**
-	 * Get the bit depth of the image
-	 * @return
-	 */
-	public short getBitDepth(){
-
-		return getShort(ADACDictionary.PIXEL_BIT_DEPTH);
-		
-	}
-
-	public FileInfo getFileInfo(FileInfo fileinfo) throws IOException {
-
-		fi = fileinfo;
-		
 		if (inputStream != null) {
 			f = inputStream;
 		} else {
 			f = new BufferedInputStream(new FileInputStream(directory + fileName));
 		}
-
-		Log.log("\nADACDecoder: decoding " + fileName);
 
 		// Copy header into a byteBuffer for parsing forwards and backwards
 		byte[] bytHeader = new byte[ADACDictionary.LABEL_OFFSET];
@@ -81,8 +63,17 @@ public class ADACDecoder implements KvpListener {
 		// Parse the header
 		parseHeader();
 
-		return fi;
+		
+	}
+	
+	/**
+	 * Get the bit depth of the image
+	 * @return
+	 */
+	public short getBitDepth(){
 
+		return getShort(ADACDictionary.PIXEL_BIT_DEPTH);
+		
 	}
 	
 	/**
@@ -209,6 +200,7 @@ public class ADACDecoder implements KvpListener {
 	public short getNumberOfGatedIntervals(){
 		return getShort(ADACDictionary.NUMBER_OF_IMAGE_SETS);
 	}
+	
 	/**
 	 * Get the total number of images in the file.
 	 * 
@@ -512,14 +504,6 @@ public class ADACDecoder implements KvpListener {
 		shortsMap.put(shortKvp.getKeyNum(), shortKvp.getValue());
 		Log.log(shortKvp.getLogString());
 
-	}
-
-	/**
-	 * Set the buffered inputstream object containing the data.
-	 * @param bis
-	 */
-	public void setInputStream(BufferedInputStream bis) {
-		inputStream = bis;
 	}
 
 }
