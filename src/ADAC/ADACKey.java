@@ -49,7 +49,7 @@ public class ADACKey {
 	 * 
 	 * @return The offset in bytes.
 	 */
-	public short getFieldOffset() {
+	public short getOffset() {
 		return fieldOffset;
 	}
 

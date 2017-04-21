@@ -15,7 +15,7 @@ public abstract class ADACKvp {
 	}
 
 	public short getFieldOffset(){
-		return getKey().getFieldOffset();
+		return getKey().getOffset();
 	}
 	
 	public ADACKey getKey() {
@@ -32,7 +32,7 @@ public abstract class ADACKvp {
 	 * @return
 	 */
 	public String getLogString() {
-		return getKey().getKeyNum() + ", " + getKey().getDataType() + ", " + getKey().getFieldOffset() + ", "
+		return getKey().getKeyNum() + ", " + getKey().getDataType() + ", " + getKey().getOffset() + ", "
 				+ getString();
 	}
 
