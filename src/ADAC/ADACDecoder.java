@@ -9,35 +9,75 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+/**
+ * Create an ADACDecoder object. The object holds the header information in a
+ * retrievable format using Maps containing byte, float, short or integer key
+ * value pairs. Keys are described in {@link ADACDictionary}
+ * 
+ * @author neil
+ *
+ */
 public class ADACDecoder implements KvpListener {
 
 	private final ADACLog logger;
 	private final ArrayList<ADACKvp> keyList = new ArrayList<ADACKvp>();
-	
+
 	private Boolean isGated = null;
-	
+
 	private BufferedInputStream f;
 	private BufferedInputStream inputStream;
-	
+
 	private byte[] valHeaders;
-	
+
 	private ByteBuffer keyBuffer;
 	private ByteBuffer valBuffer;
-	
+
 	private Map<String, String> extrasMap = new HashMap<String, String>();
 	private final Map<Short, Float> floatsMap = new HashMap<Short, Float>();
 	private final Map<Short, Integer> intsMap = new HashMap<Short, Integer>();
 	private final Map<Short, Short> shortsMap = new HashMap<Short, Short>();
 	private final Map<Short, String> stringsMap = new HashMap<Short, String>();
-	
+
+	/**
+	 * Create an ADACDecoder object. The object holds the header information in
+	 * a retrievable format using Maps containing byte, float, short or integer
+	 * key value pairs. Keys are described in {@link ADACDictionary}
+	 * 
+	 * @param directory
+	 *            The directory containing the ADAC object for decoding.
+	 * @param fileName
+	 *            The filename of the ADAC object for decoding.
+	 * @param adacLog
+	 *            The calling class must implement the {@link ADACLog}
+	 *            interface.
+	 * @throws IOException
+	 */
 	public ADACDecoder(String directory, String fileName, ADACLog adacLog) throws IOException {
 
 		this(directory, fileName, null, adacLog);
-		
+
 	}
-	
+
+	/**
+	 * Create an ADACDecoder object. The object holds the header information in
+	 * a retrievable format using Maps containing byte, float, short or integer
+	 * key value pairs. Keys are described in {@link ADACDictionary}
+	 * 
+	 * @param directory
+	 *            The directory containing the ADAC object for decoding.
+	 * @param fileName
+	 *            The filename of the ADAC object for decoding.
+	 * @param bis
+	 *            The {@link BufferedInputStream} to read the file into. If this
+	 *            is null, a new {@link BufferedInputStream} is created from the
+	 *            director and filename.
+	 * @param adacLog
+	 *            The calling class must implement the {@link ADACLog}
+	 *            interface.
+	 * @throws IOException
+	 */
 	public ADACDecoder(String directory, String fileName, BufferedInputStream bis, ADACLog adacLog) throws IOException {
-				
+
 		logger = adacLog;
 		logger.log("\nADACDecoder: decoding " + fileName);
 
@@ -45,7 +85,7 @@ public class ADACDecoder implements KvpListener {
 
 		if (inputStream != null) {
 			f = inputStream;
-		} else {	
+		} else {
 			f = new BufferedInputStream(new FileInputStream(directory + fileName));
 		}
 
@@ -60,19 +100,20 @@ public class ADACDecoder implements KvpListener {
 
 		// Parse the header
 		parseHeader();
-	
+
 	}
-	
+
 	/**
 	 * Get the bit depth of the image
+	 * 
 	 * @return
 	 */
-	public short getBitDepth(){
+	public short getBitDepth() {
 
 		return getShort(ADACDictionary.PIXEL_BIT_DEPTH);
-		
+
 	}
-	
+
 	/**
 	 * Return a floating point value represented by the key argument (a
 	 * near-definitive list is given in the dictionary class).
@@ -104,18 +145,25 @@ public class ADACDecoder implements KvpListener {
 
 		return header.toString().trim();
 	}
-	
+
 	/**
 	 * Get the length of time of the acquisition of each frame.
+	 * 
 	 * @return
 	 */
-	public double getFrameTime(){
-	
+	public double getFrameTime() {
+
 		// Convert from milliseconds to seconds
 		return getInteger(ADACDictionary.FRAME_TIME) / 1000;
-		
+
 	}
 
+	/**
+	 * Make an {@link ADACKey} object from the next six bytes of data.
+	 * 
+	 * @return the {@link ADACKey}
+	 * @throws IOException
+	 */
 	private ADACKey getKeys() throws IOException {
 
 		// Get the key number for cross-referencing with the dictionary
@@ -136,24 +184,26 @@ public class ADACDecoder implements KvpListener {
 		return new ADACKey(num, fieldOffset);
 
 	}
-	
+
 	/**
 	 * Get the image height in pixel units
+	 * 
 	 * @return
 	 */
-	public short getHeight(){
-		
+	public short getHeight() {
+
 		return getShort(ADACDictionary.Y_DIMENSIONS);
 	}
-	
+
 	/**
 	 * Get the offset, in bytes, to the image data within the file
+	 * 
 	 * @return
 	 */
-	public int getImageOffset(){
+	public int getImageOffset() {
 
 		if (isGated()) {
-			
+
 			if (isReconstruction()) {
 
 				// Must have a gated reconstruction. For each gated interval
@@ -194,10 +244,10 @@ public class ADACDecoder implements KvpListener {
 	 * 
 	 * @return
 	 */
-	public short getNumberOfGatedIntervals(){
+	public short getNumberOfGatedIntervals() {
 		return getShort(ADACDictionary.NUMBER_OF_IMAGE_SETS);
 	}
-	
+
 	/**
 	 * Get the total number of images in the file.
 	 * 
@@ -207,26 +257,26 @@ public class ADACDecoder implements KvpListener {
 
 		short zdim = getZDim();
 		zdim = zdim > 0 ? zdim : 1;
-		
+
 		short slices = getNumberOfSlices();
 		slices = slices > 0 ? slices : 1;
-		
+
 		short intervals = getNumberOfGatedIntervals();
 		intervals = intervals > 0 ? intervals : 1;
-		
+
 		return zdim * slices * intervals;
-		
+
 	}
-	
+
 	/**
 	 * Get the number of slices in a reconstructed data set.
 	 * 
 	 * @return
 	 */
-	public short getNumberOfSlices(){
+	public short getNumberOfSlices() {
 		return getShort(ADACDictionary.RECONSTRUCTED_SLICES);
 	}
-	
+
 	/**
 	 * Get the pixel size in mm.
 	 * 
@@ -275,17 +325,21 @@ public class ADACDecoder implements KvpListener {
 		return pixelSize;
 
 	}
-	
-	private float getRoughPixelSize(){
-		
-		// Fall back on a-priori knowledge of useful field of view size
-		// (520mm x 380 mm), which gives a rough approximation.
+
+	/**
+	 * Fall back on a-priori knowledge of useful field of view size (520mm x
+	 * 380mm), which gives a rough approximation.
+	 * 
+	 * @return
+	 */
+	private float getRoughPixelSize() {
+
 		float size = 380; // mm
 		float pixels = getHeight();
-		return pixels > 0 ? size/pixels : 0;
-		
+		return pixels > 0 ? size / pixels : 0;
+
 	}
-	
+
 	/**
 	 * Return a short integer value represented by the key argument (a
 	 * near-definitive list is given in the dictionary class).
@@ -298,8 +352,8 @@ public class ADACDecoder implements KvpListener {
 	}
 
 	/**
-	 * Return a string value represented by the key argument (a
-	 * near-definitive list is given in the dictionary class).
+	 * Return a string value represented by the key argument (a near-definitive
+	 * list is given in the dictionary class).
 	 * 
 	 * @param dictionaryKey
 	 * @return
@@ -310,13 +364,14 @@ public class ADACDecoder implements KvpListener {
 
 	/**
 	 * Get the image width in pixel units
+	 * 
 	 * @return
 	 */
-	public short getWidth(){
-		
+	public short getWidth() {
+
 		return getShort(ADACDictionary.X_DIMENSIONS);
 	}
-	
+
 	/**
 	 * Get the Z-Dimension. This is usually the number of frames of a dynamic
 	 * data set.
@@ -336,7 +391,7 @@ public class ADACDecoder implements KvpListener {
 	public boolean isGated() {
 
 		if (isGated == null) {
-			
+
 			String AD_Type = getString(ADACDictionary.DATA_TYPE);
 
 			if (AD_Type != null && AD_Type.startsWith("G")) {
@@ -354,7 +409,7 @@ public class ADACDecoder implements KvpListener {
 		return isGated;
 
 	}
-	
+
 	/**
 	 * Check if the image is a tomographic reconstruction.
 	 * 
@@ -363,7 +418,7 @@ public class ADACDecoder implements KvpListener {
 	 */
 	public boolean isReconstruction() {
 		return getShort(ADACDictionary.RECONSTRUCTED_SLICES) > 0;
-	}	
+	}
 
 	/**
 	 * Parse the header information for key-value pairs.
@@ -385,7 +440,8 @@ public class ADACDecoder implements KvpListener {
 
 			short labels = keyBuffer.getShort();
 			logger.log(Integer.toString(labels)); // Number of labels in header
-			logger.log(Integer.toString(keyBuffer.get())); // Number of sub-headers
+			logger.log(Integer.toString(keyBuffer.get())); // Number of
+															// sub-headers
 			logger.log(Integer.toString(keyBuffer.get())); // Unused byte
 
 			// For each header field available.. get them
